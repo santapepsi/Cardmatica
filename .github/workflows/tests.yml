@@ -24,6 +24,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+      # Misma versión que requirements.lock, para que el formato no cambie entre equipos.
       - run: pip install "ruff==0.16.9"
       - run: ruff check backend
       - run: ruff format --check backend
