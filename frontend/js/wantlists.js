@@ -214,7 +214,7 @@ function rowsHtml(list) {
 
 function alertCell(item) {
     const target = item.alert;
-    const currency = target?.currency || window.cur;
+    const currency = target?.currency || window.currency;
     const hit = alerts.get(item.id);
     return `<label class="wl-alert"><input type="number" min="0" step="0.01" inputmode="decimal" value="${
         target ? h(target.amount) : ""
@@ -248,9 +248,9 @@ function alertsHtml() {
 
 function updateBadge() {
     const count = alerts.size;
-    window.TN.Wantlists = count ? `Wantlists (${count})` : "Wantlists";
+    window.TAB_LABELS.Wantlists = count ? `Wantlists (${count})` : "Wantlists";
     const tab = document.querySelector('#tabs [data-g="Wantlists"]');
-    if (tab) tab.textContent = window.TN.Wantlists;
+    if (tab) tab.textContent = window.TAB_LABELS.Wantlists;
 }
 
 const API_LANGUAGE = Object.fromEntries(
@@ -361,13 +361,13 @@ export function installWantlists({ panel, detail, api: client }) {
                 if (!slot || !current) return;
                 slot.innerHTML = slot.innerHTML
                     ? ""
-                    : pickerHtml(current.card, current.printings, current.selectedId, window.mk);
+                    : pickerHtml(current.card, current.printings, current.selectedId, window.market);
                 slot.querySelector("select")?.focus();
                 return;
             }
             if (target.hasAttribute("data-wl-add")) {
                 const current = detail();
-                if (current && addFromForm(current.card, current.printings, window.mk))
+                if (current && addFromForm(current.card, current.printings, window.market))
                     document.getElementById("wl-picker").innerHTML = "";
                 return;
             }
@@ -435,7 +435,7 @@ export function installWantlists({ panel, detail, api: client }) {
                 } else {
                     item.alert = {
                         amount: Math.round(amount * 100) / 100,
-                        currency: item.alert?.currency || window.cur
+                        currency: item.alert?.currency || window.currency
                     };
                     delete item.seenSaleAt;
                     window.toast?.(

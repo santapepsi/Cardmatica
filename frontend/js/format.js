@@ -1,11 +1,11 @@
 // Prices and dates as people read them.
 //
-// Amounts are stored in the currency they were paid in. window.CUR and
-// window.eur() come from the storefront (script.js): eur() formats a euro amount
-// in the currency chosen in the header, with illustrative exchange rates.
+// Amounts are stored in the currency they were paid in. window.CURRENCIES and
+// window.formatPrice() come from frontend/demo/store.js: formatPrice() shows a
+// euro amount in the currency chosen in the header, with illustrative rates.
 
 function euroRate(currency) {
-    return (window.CUR || []).find((entry) => entry[0] === currency)?.[2];
+    return (window.CURRENCIES || []).find((entry) => entry.code === currency)?.perEuro;
 }
 
 export function toEuro(amount, currency) {
@@ -15,7 +15,7 @@ export function toEuro(amount, currency) {
 
 export function money(amount, currency) {
     const euros = toEuro(amount, currency);
-    return euros === null || !Number.isFinite(euros) ? `${amount} ${currency}` : window.eur(euros);
+    return euros === null || !Number.isFinite(euros) ? `${amount} ${currency}` : window.formatPrice(euros);
 }
 
 export function formatDate(value) {

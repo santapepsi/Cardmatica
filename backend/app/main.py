@@ -91,11 +91,6 @@ def styles():
     return FileResponse(ROOT / "styles.css", media_type="text/css")
 
 
-@app.get("/script.js", include_in_schema=False)
-def legacy_script():
-    return FileResponse(ROOT / "script.js", media_type="text/javascript")
-
-
 frontend = ROOT / "frontend"
 if frontend.is_dir():
     app.mount("/frontend", StaticFiles(directory=frontend), name="frontend")
