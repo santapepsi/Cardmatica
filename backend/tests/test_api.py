@@ -1,9 +1,10 @@
 from uuid import uuid4
 
+from sqlalchemy import event, select
+
 from app.models import CardImage
 from app.schemas.ingestion import GroupInput, ImageInput
 from app.services.ingestion import IngestionService
-from sqlalchemy import event, select
 
 
 def seed(factory, record):
