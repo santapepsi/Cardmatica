@@ -51,6 +51,7 @@ jobs:
           set -o pipefail
           python -m pytest -q -rf --tb=short 2>&1 | tee pytest.txt || {
             grep -E "^FAILED" pytest.txt | sed 's/^/::error::/'
+            grep -E "^E +(AssertionError|Actual value|.*Error)" pytest.txt | head -20 | sed 's/^/::warning::/'
             exit 1
           }
 

@@ -511,6 +511,7 @@ def test_browser_data_moves_into_the_account(live_server, browser_page):
     page.locator("#auth-terms").check()
     page.locator("#auth-register button[type=submit]").click()
     expect(page.locator("#ts")).to_contain_text("se guardaron en tu cuenta")
+    page.wait_for_load_state("networkidle")
     # A fresh browser profile: the lists and the currency come from the account.
     page.context.clear_cookies()
     page.evaluate("localStorage.clear()")
