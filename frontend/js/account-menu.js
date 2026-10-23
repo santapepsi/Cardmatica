@@ -79,6 +79,8 @@ function whoHtml() {
     const profile = currentProfile();
     if (user)
         return `<b>${h(user.display_name)}</b><small>${h(user.email)}${
+            user.email_verified ? "" : ' · <span class="warn-text">sin confirmar</span>'
+        }${
             profile?.store ? ` · ${h(profile.store)}` : ""
         }</small>`;
     // Without an account, the profile kept in this browser still names the person.

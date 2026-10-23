@@ -1,6 +1,6 @@
 import { installAccountMenu } from "./account-menu.js";
 import { installAdmin, renderAdmin } from "./admin.js";
-import { installAuth, loadAccount, renderAuth, renderSecurity } from "./auth.js";
+import { installAuth, loadAccount, openAccountLink, renderAuth, renderSecurity } from "./auth.js";
 import { CatalogApi } from "./api.js";
 import { homeBanlistHtml, startCountdowns } from "./banlist.js";
 import { installCart, renderCart } from "./cart-page.js";
@@ -742,6 +742,8 @@ installAdmin();
 loadAccount();
 const initial = readUrl();
 applyUrl(initial);
+// Links from account emails (/verificar, /restablecer) open the Acceso panel.
+if (openAccountLink(location.pathname)) window.tab = "Acceso";
 window.updateMarketButtons();
 window.showTab();
 if (initial.card) openCard(initial.card, { push: false });

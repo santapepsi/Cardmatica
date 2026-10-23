@@ -1997,3 +1997,8 @@ button.acc-avatar:hover,
     display: block;
     color: var(--mu);
 }
+
+.auth-notice {
+    margin: 0 0 10px;
+    border-color: rgba(120, 220, 160, .35);
+}

@@ -324,8 +324,13 @@ Cuentas (`/api/v1/auth`): `POST /register`, `/login`, `/logout`, `/password`,
 hash del token. Los cambios exigen la cabecera `X-CSRF-Token` con el valor de la
 cookie `cm_csrf` y se rechazan si llegan de otro sitio. Contraseñas con scrypt;
 bloqueo temporal tras `LOGIN_MAX_FAILURES` intentos y límite por IP
-(`AUTH_ATTEMPTS_PER_MINUTE`, en memoria: válido para un solo proceso). Falta el
-envío de correos (confirmación de cuenta y recuperación de contraseña).
+(`AUTH_ATTEMPTS_PER_MINUTE`, en memoria: válido para un solo proceso). Al registrarse
+se envía un enlace para confirmar el correo (`/verificar`) y desde el inicio de
+sesión se puede pedir uno para restablecer la contraseña (`/restablecer`); los
+enlaces son de un solo uso y vencen (`EMAIL_CONFIRMATION_HOURS`,
+`PASSWORD_RESET_MINUTES`). Con `EMAIL_BACKEND=console` (valor por defecto) los
+correos no salen del equipo: aparecen en `docker compose logs api`, con su enlace.
+En producción, `EMAIL_BACKEND=smtp` y los datos del servidor de correo.
 
 Datos de la cuenta (`/api/v1/account`): `GET` perfil y preferencias; `PUT /profile`,
 `/preferences` (moneda, mercado, vista); `GET`/`PUT /wantlists`. Las wantlists se

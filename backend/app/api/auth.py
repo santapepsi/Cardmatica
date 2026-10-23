@@ -7,6 +7,7 @@ Cookies:
   cookies but cannot read cm_csrf, so it cannot forge that header.
 """
 
+import logging
 import secrets
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
@@ -27,13 +28,34 @@ from app.models.accounts import UserSession
 from app.schemas.accounts import (
     LoginInput,
     PasswordChangeInput,
+    PasswordResetInput,
+    PasswordResetRequest,
     RegisterInput,
     SessionView,
+    TokenInput,
     UserView,
 )
 from app.services import accounts
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Cuentas"])
+logger = logging.getLogger(__name__)
+
+
+def base_url(request: Request) -> str:
+    """Where links in emails point: PUBLIC_BASE_URL, or the site this request came to."""
+    configured = get_settings().public_base_url.rstrip("/")
+    if configured:
+        return configured
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host", "localhost")
+    return f"{'https' if is_https(request) else 'http'}://{host}"
+
+
+def send_confirmation(session, user, request: Request) -> None:
+    # A failing mail server must not undo the registration; the link can be resent.
+    try:
+        accounts.send_confirmation(session, user, base_url(request))
+    except OSError as error:
+        logger.error("No se pudo enviar el correo de confirmación: %s", type(error).__name__)
 
 
 def limit_attempts(request: Request):
@@ -92,6 +114,7 @@ def register(payload: RegisterInput, request: Request, response: Response, sessi
         )
     except accounts.AccountError as error:
         fail(error)
+    send_confirmation(session, user, request)
     new = accounts.start_session(
         session, user, remember=False, user_agent=request.headers.get("user-agent")
     )
@@ -175,6 +198,65 @@ def password(payload: PasswordChangeInput, found: Current, session: SessionDep):
     accounts.end_all_sessions(session, user, keep=row)
     session.commit()
     return Response(status_code=204)
+
+
+@router.post(
+    "/confirm-email/request",
+    status_code=204,
+    dependencies=[Depends(same_origin), Depends(csrf), Depends(limit_attempts)],
+)
+def resend_confirmation(found: Current, request: Request, session: SessionDep):
+    user = found[0]
+    if user.email_verified_at:
+        raise HTTPException(409, "Tu correo ya está confirmado.")
+    send_confirmation(session, user, request)
+    session.commit()
+    return Response(status_code=204)
+
+
+@router.post(
+    "/confirm-email",
+    response_model=UserView,
+    dependencies=[Depends(same_origin), Depends(limit_attempts)],
+)
+def confirm_email(payload: TokenInput, session: SessionDep):
+    try:
+        user = accounts.confirm_email(session, payload.token)
+    except accounts.AccountError as error:
+        fail(error)
+    session.commit()
+    return user_view(user)
+
+
+@router.post(
+    "/password-reset/request",
+    status_code=202,
+    dependencies=[Depends(same_origin), Depends(limit_attempts)],
+)
+def request_password_reset(payload: PasswordResetRequest, request: Request, session: SessionDep):
+    try:
+        accounts.request_password_reset(session, payload.email, base_url(request))
+    except OSError as error:
+        logger.error("No se pudo enviar el correo de recuperación: %s", type(error).__name__)
+    session.commit()
+    # The same answer whether or not the account exists.
+    return {"message": "Si existe una cuenta con ese correo, te enviamos un enlace."}
+
+
+@router.post(
+    "/password-reset",
+    status_code=204,
+    dependencies=[Depends(same_origin), Depends(limit_attempts)],
+)
+def reset_password(payload: PasswordResetInput, response: Response, session: SessionDep):
+    try:
+        accounts.reset_password(session, payload.token, payload.new_password)
+    except accounts.AccountError as error:
+        fail(error)
+    session.commit()
+    clear_cookies(response)
+    response.status_code = 204
+    return response
 
 
 def user_view(user) -> UserView:
