@@ -161,9 +161,10 @@ def test_hsts_only_over_https(client):
 
 
 def test_card_page_title_legal_pages_and_404(client, factory, record):
+    from sqlalchemy import select
+
     from app.models import Card
     from app.services.ingestion import IngestionService
-    from sqlalchemy import select
 
     with factory.begin() as session:
         IngestionService(session).ingest(record)
