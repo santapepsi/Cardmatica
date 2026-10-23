@@ -1908,3 +1908,11 @@ button.acc-avatar:hover,
 .acc-item-main {
     width: 100%;
 }
+
+#secv {
+    max-width: 640px;
+}
+
+#secv .fm-stack .btn {
+    justify-self: start;
+}

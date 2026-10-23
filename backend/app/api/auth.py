@@ -43,9 +43,16 @@ def same_origin(request: Request):
     origin = request.headers.get("origin") or request.headers.get("referer")
     if not origin:
         return
-    host = request.headers.get("x-forwarded-host") or request.headers.get("host", "")
-    if urlsplit(origin).netloc != host:
-        raise HTTPException(403, "Solicitud de otro sitio rechazada")
+    sender = urlsplit(origin)
+    hosts = {request.headers.get("x-forwarded-host"), request.headers.get("host")}
+    if sender.netloc in hosts:
+        return
+    # Behind a private development proxy (a Codespace) the Host header can be
+    # rewritten; its public name is accepted when it is a configured preview host.
+    settings = get_settings()
+    if settings.deployment_mode == "local" and settings.is_preview_host(sender.hostname):
+        return
+    raise HTTPException(403, "Solicitud de otro sitio rechazada")
 
 
 def limit_attempts(request: Request):
@@ -179,9 +186,9 @@ def sessions(found: Current, session: SessionDep):
     return [
         SessionView(
             id=item.id,
-            created_at=item.created_at,
-            last_seen_at=item.last_seen_at,
-            expires_at=item.expires_at,
+            created_at=accounts.as_aware(item.created_at),
+            last_seen_at=accounts.as_aware(item.last_seen_at),
+            expires_at=accounts.as_aware(item.expires_at),
             user_agent=item.user_agent,
             current=item.id == row.id,
         )
@@ -217,5 +224,5 @@ def user_view(user) -> UserView:
         display_name=user.display_name,
         role=user.role,
         email_verified=user.email_verified_at is not None,
-        created_at=user.created_at,
+        created_at=accounts.as_aware(user.created_at),
     )

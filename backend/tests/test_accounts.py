@@ -144,3 +144,14 @@ def test_production_cookies_are_secure(client, settings, monkeypatch):
     monkeypatch.setattr(settings, "deployment_mode", "production")
     response = register(client)
     assert all("Secure" in item for item in response.headers.get_list("set-cookie"))
+
+
+def test_codespace_origin_is_accepted_in_local_mode(client, settings, monkeypatch):
+    monkeypatch.setattr(settings, "local_preview_host_suffixes", [".app.github.dev"])
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"email": "nadie@example.com", "password": "x"},
+        headers={"Origin": "https://demo-8000.app.github.dev"},
+    )
+    # Reaches the login check (401), instead of the cross-site refusal (403).
+    assert response.status_code == 401
