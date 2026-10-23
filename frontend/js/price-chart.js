@@ -1,11 +1,7 @@
-import { formatDate, money, toEuro } from "./storage.js";
+import { escapeHtml } from "./html.js";
+import { formatDate, money, toEuro } from "./format.js";
 
-const h = (value) =>
-    String(value ?? "").replace(
-        /[&<>"']/g,
-        (character) =>
-            ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character])
-    );
+const h = escapeHtml;
 
 export const RANGES = [
     ["1M", 30],

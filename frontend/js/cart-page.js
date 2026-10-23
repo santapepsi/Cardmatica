@@ -1,11 +1,7 @@
+import { escapeHtml } from "./html.js";
 // Full-page cart for the demo storefront in script.js (cart, ITEMS, V and the
 // helpers there are globals). The popup and this page share cartTotals().
-const h = (value) =>
-    String(value ?? "").replace(
-        /[&<>"']/g,
-        (character) =>
-            ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character])
-    );
+const h = escapeHtml;
 
 let receipt = null;
 

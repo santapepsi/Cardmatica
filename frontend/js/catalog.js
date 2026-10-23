@@ -5,13 +5,14 @@ import {
     catalogGrid,
     catalogRows,
     detailHtml,
-    escapeHtml,
     homeHtml,
     pager,
     previewHtml,
     skeletonRows,
     skeletonTiles
 } from "./catalog-view.js";
+import { BACK_TO_TOP_PX, CATALOG, HOVER_PREVIEW } from "./config.js";
+import { escapeHtml } from "./html.js";
 import { priceChartHtml } from "./price-chart.js";
 import { installProfile, renderProfile } from "./profile.js";
 import { readJson, writeJson } from "./storage.js";
@@ -270,7 +271,10 @@ async function loadCards(reset = false) {
     status("Consultando catálogo…", { quiet: true });
     element(home ? "home" : "cat").setAttribute("aria-busy", "true");
     // Cached answers arrive at once; only slower ones show placeholders.
-    const skeleton = setTimeout(() => current === generation && showSkeleton(home), 120);
+    const skeleton = setTimeout(
+        () => current === generation && showSkeleton(home),
+        CATALOG.skeletonDelayMs
+    );
     try {
         await loadFacets();
         applyWanted();
@@ -279,7 +283,7 @@ async function loadCards(reset = false) {
             "cards",
             {
                 page: home ? 1 : page,
-                page_size: home ? 8 : 24,
+                page_size: home ? CATALOG.homeSize : CATALOG.pageSize,
                 market: window.mk,
                 q: element("q").value.trim(),
                 card_type: cardTypes[window.tab],
@@ -330,7 +334,7 @@ window.list = function () {
     if (isCommerce()) return commerceList();
     if (isLocal() && !element("q").value.trim()) return;
     clearTimeout(timer);
-    timer = setTimeout(() => loadCards(true), 250);
+    timer = setTimeout(() => loadCards(true), CATALOG.searchDelayMs);
 };
 
 window.init = function () {
@@ -391,11 +395,11 @@ async function openCard(id, { push = true } = {}) {
         priceHistory = undefined;
         const market = window.mk;
         const history = api
-            .get(`cards/${id}/price-history`, { market, days: 3650 })
+            .get(`cards/${id}/price-history`, { market, days: CATALOG.historyDays })
             .catch(() => null);
         const [card, printings] = await Promise.all([
             api.get(`cards/${id}`),
-            api.get(`cards/${id}/printings`, { page: 1, page_size: 24, market })
+            api.get(`cards/${id}/printings`, { page: 1, page_size: CATALOG.pageSize, market })
         ]);
         if (
             current !== detailGeneration ||
@@ -458,7 +462,7 @@ document.addEventListener(
             try {
                 const data = await api.get(`cards/${detail.id}/printings`, {
                     page: Number(target.dataset.printingPage),
-                    page_size: 24,
+                    page_size: CATALOG.pageSize,
                     market: window.mk
                 });
                 if (current !== detailGeneration || element("md").dataset.mode !== "catalog")
@@ -518,9 +522,15 @@ function hidePreview() {
 
 function placePreview(x, y) {
     const box = preview.getBoundingClientRect();
-    const left = x + 24 + box.width > window.innerWidth - 12 ? x - box.width - 24 : x + 24;
-    const top = Math.min(Math.max(12, y - box.height / 2), window.innerHeight - box.height - 12);
-    preview.style.left = `${Math.max(12, left)}px`;
+    const { offsetPx, marginPx } = HOVER_PREVIEW;
+    // Prefer the right of the pointer; flip to the left near the window edge.
+    const fitsRight = x + offsetPx + box.width <= window.innerWidth - marginPx;
+    const left = fitsRight ? x + offsetPx : x - box.width - offsetPx;
+    const top = Math.min(
+        Math.max(marginPx, y - box.height / 2),
+        window.innerHeight - box.height - marginPx
+    );
+    preview.style.left = `${Math.max(marginPx, left)}px`;
     preview.style.top = `${top}px`;
 }
 
@@ -535,7 +545,7 @@ document.addEventListener("pointerover", (event) => {
         preview.innerHTML = previewHtml(card);
         preview.hidden = false;
         placePreview(event.clientX, event.clientY);
-    }, 250);
+    }, HOVER_PREVIEW.delayMs);
 });
 document.addEventListener("pointermove", (event) => {
     if (!preview.hidden && previewTarget) placePreview(event.clientX, event.clientY);
@@ -578,8 +588,7 @@ toTop.addEventListener("click", () => {
 window.addEventListener(
     "scroll",
     () => {
-        // After one screen (or 600 px on tall screens) the button earns its place.
-        toTop.hidden = window.scrollY < Math.min(600, window.innerHeight);
+        toTop.hidden = window.scrollY < Math.min(BACK_TO_TOP_PX, window.innerHeight);
     },
     { passive: true }
 );
