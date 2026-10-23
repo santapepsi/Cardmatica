@@ -68,14 +68,24 @@ def browser_page():
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(channel="chrome" if os.name == "nt" else None)
         page = browser.new_page(viewport={"width": 1280, "height": 900})
+        # The Content-Security-Policy must not block anything any page uses.
+        blocked = []
+        page.on(
+            "console",
+            lambda message: (
+                "Content Security Policy" in message.text and blocked.append(message.text)
+            ),
+        )
         yield page
         browser.close()
+        assert not blocked
 
 
 def test_catalog_printing_switch_currency_and_market(live_server, browser_page):
     page = browser_page
     errors = []
     page.on("pageerror", lambda error: errors.append(str(error)))
+
     page.goto(live_server)
     expect(page.locator("#home")).to_contain_text("Synthetic Test Dragon")
     page.locator('[data-go="Todas"]').click()
