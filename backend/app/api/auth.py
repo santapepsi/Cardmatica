@@ -8,13 +8,19 @@ Cookies:
 """
 
 import secrets
-from typing import Annotated
-from urllib.parse import urlsplit
 
-from fastapi import APIRouter, Cookie, Depends, Header, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy import select
 
-from app.api.dependencies import SessionDep
+from app.api.dependencies import (
+    CSRF_COOKIE,
+    SESSION_COOKIE,
+    Current,
+    SessionDep,
+    csrf,
+    is_https,
+    same_origin,
+)
 from app.core.config import get_settings
 from app.db.base import utcnow
 from app.models.accounts import UserSession
@@ -27,32 +33,7 @@ from app.schemas.accounts import (
 )
 from app.services import accounts
 
-SESSION_COOKIE = "cm_session"
-CSRF_COOKIE = "cm_csrf"
-CSRF_HEADER = "X-CSRF-Token"
-
 router = APIRouter(prefix="/api/v1/auth", tags=["Cuentas"])
-
-
-def is_https(request: Request) -> bool:
-    return request.headers.get("x-forwarded-proto", request.url.scheme) == "https"
-
-
-def same_origin(request: Request):
-    """Refuse a change sent from another site (checked before any cookie is used)."""
-    origin = request.headers.get("origin") or request.headers.get("referer")
-    if not origin:
-        return
-    sender = urlsplit(origin)
-    hosts = {request.headers.get("x-forwarded-host"), request.headers.get("host")}
-    if sender.netloc in hosts:
-        return
-    # Behind a private development proxy (a Codespace) the Host header can be
-    # rewritten; its public name is accepted when it is a configured preview host.
-    settings = get_settings()
-    if settings.deployment_mode == "local" and settings.is_preview_host(sender.hostname):
-        return
-    raise HTTPException(403, "Solicitud de otro sitio rechazada")
 
 
 def limit_attempts(request: Request):
@@ -87,27 +68,6 @@ def set_cookies(request: Request, response: Response, new: accounts.NewSession):
 def clear_cookies(response: Response):
     response.delete_cookie(SESSION_COOKIE, path="/")
     response.delete_cookie(CSRF_COOKIE, path="/")
-
-
-def current(
-    session: SessionDep,
-    token: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None,
-):
-    found = accounts.session_user(session, token)
-    if not found:
-        raise HTTPException(401, "Inicia sesión para continuar")
-    return found
-
-
-def csrf(
-    header: Annotated[str | None, Header(alias=CSRF_HEADER)] = None,
-    cookie: Annotated[str | None, Cookie(alias=CSRF_COOKIE)] = None,
-):
-    if not header or not cookie or not secrets.compare_digest(header, cookie):
-        raise HTTPException(403, "Falta el token de seguridad: recarga la página")
-
-
-Current = Annotated[tuple, Depends(current)]
 
 
 def fail(error: accounts.AccountError, status: int = 400):

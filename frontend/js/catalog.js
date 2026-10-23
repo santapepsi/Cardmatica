@@ -1,4 +1,5 @@
 import { installAccountMenu } from "./account-menu.js";
+import { installAdmin, renderAdmin } from "./admin.js";
 import { installAuth, loadAccount, renderAuth, renderSecurity } from "./auth.js";
 import { CatalogApi } from "./api.js";
 import { homeBanlistHtml, startCountdowns } from "./banlist.js";
@@ -52,14 +53,16 @@ const localPanels = {
     Perfil: "pfv",
     Carrito: "cartv",
     Acceso: "authv",
-    Seguridad: "secv"
+    Seguridad: "secv",
+    Admin: "admv"
 };
 const renderLocal = {
     Wantlists: renderWantlists,
     Perfil: renderProfile,
     Carrito: renderCart,
     Acceso: renderAuth,
-    Seguridad: renderSecurity
+    Seguridad: renderSecurity,
+    Admin: renderAdmin
 };
 const isLocal = () => window.tab in localPanels;
 const isCatalog = () => !isCommerce() && !isLocal() && window.tab !== "Inicio";
@@ -735,6 +738,7 @@ installAuth({
     }
 });
 installAccountMenu();
+installAdmin();
 loadAccount();
 const initial = readUrl();
 applyUrl(initial);

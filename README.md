@@ -339,7 +339,16 @@ propio sitio), `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` y,
 en producción bajo HTTPS, HSTS (`backend/app/core/security.py`). En producción,
 definir `ALLOWED_HOSTS` con el dominio real.
 
-Administración exige `Authorization: Bearer ADMIN_TOKEN` de al menos 32 caracteres.
+Administración (`/api/v1/admin`): acepta la sesión de una cuenta con rol `admin`
+(con CSRF, como el resto de cambios) o el token para scripts. El panel está en el
+menú de cuenta de los administradores: resumen, cuentas con su rol y últimas
+sincronizaciones. El primer administrador se nombra desde la terminal:
+
+```bash
+docker compose exec api cardmatica set-role tu@correo.com admin
+```
+
+Para scripts, administración también acepta `Authorization: Bearer ADMIN_TOKEN` de al menos 32 caracteres.
 Sin token configurado, queda deshabilitada. La API solo encola; no ejecuta scraping
 en background de una petición. Mantener el token fuera del frontend y del navegador
 de clientes. El despliegue público debe usar HTTPS y rotación del token operativo.

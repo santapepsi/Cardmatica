@@ -546,3 +546,34 @@ def test_card_address_and_legal_pages(live_server, browser_page):
     page.goto(f"{live_server}/pagina-inventada")
     expect(page.locator("h1")).to_have_text("Esta página no existe")
     assert not errors
+
+
+def test_admin_panel_for_admin_accounts(live_server, browser_page, factory):
+    from sqlalchemy import select
+
+    from app.models import User
+
+    page = browser_page
+    errors = []
+    page.on("pageerror", lambda error: errors.append(str(error)))
+    page.goto(live_server)
+    page.locator("#account-button").click()
+    page.locator('#account-menu [data-auth-mode="register"]').click()
+    page.locator("#auth-name").fill("Admin")
+    page.locator("#auth-email").fill("admin@example.com")
+    page.locator("#auth-password").fill("una frase larga de prueba")
+    page.locator("#auth-terms").check()
+    page.locator("#auth-register button[type=submit]").click()
+    expect(page.locator("#ts")).to_contain_text("Cuenta creada")
+    page.locator("#account-button").click()
+    expect(page.locator('#account-menu [data-go="Admin"]')).to_have_count(0)
+    with factory.begin() as session:
+        session.scalar(select(User).where(User.email == "admin@example.com")).role = "admin"
+    page.reload()
+    page.locator("#account-button").click()
+    page.locator('#account-menu [data-go="Admin"]').click()
+    expect(page.locator("#admv .admin-stats")).to_contain_text("Cuentas")
+    expect(page.locator("#admin-users")).to_contain_text("admin@example.com")
+    page.locator("#admin-search").fill("nadie")
+    expect(page.locator("#admin-users")).to_contain_text("Ninguna cuenta coincide")
+    assert not errors
