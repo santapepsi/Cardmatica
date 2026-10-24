@@ -680,20 +680,20 @@ def test_dialog_keeps_and_returns_focus(live_server, browser_page):
 def test_search_suggestions_open_a_card(live_server, browser_page):
     page = browser_page
     page.goto(live_server)
-    page.locator("#q").press_sequentially("dragon synth", delay=20)
+    search = page.locator("#q")
+    search.press_sequentially("dragon synth", delay=20)
     option = page.locator("#q-suggest [role=option]").first
     expect(option).to_contain_text("Synthetic Test Dragon")
-    expect(page.locator("#q")).to_have_attribute("aria-expanded", "true")
+    expect(search).to_have_attribute("aria-expanded", "true")
+    # Escape closes the list and keeps the text and the results.
+    page.keyboard.press("Escape")
+    expect(page.locator("#q-suggest")).to_be_hidden()
+    expect(search).to_have_value("dragon synth")
+    search.press("Backspace")
+    search.press_sequentially("h")
+    expect(option).to_be_visible()
     page.keyboard.press("ArrowDown")
     expect(option).to_have_attribute("aria-selected", "true")
     page.keyboard.press("Enter")
     expect(page.locator("#mb")).to_contain_text("Synthetic official test text.")
     expect(page.locator("#q-suggest")).to_be_hidden()
-    # Escape closes the list and keeps the text and the results.
-    page.locator("[data-close=md]").first.click()
-    page.locator("#q").press("Space")
-    page.locator("#q").press("Backspace")
-    expect(option).to_be_visible()
-    page.keyboard.press("Escape")
-    expect(page.locator("#q-suggest")).to_be_hidden()
-    expect(page.locator("#q")).to_have_value("dragon synth")
