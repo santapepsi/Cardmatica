@@ -1286,7 +1286,7 @@ document.addEventListener("keydown", (event) => {
 // Al abrirse, el foco entra en la ventana; Tab no sale de ella mientras está
 // abierta; al cerrarse, el foco vuelve a lo que la abrió.
 const FOCUSABLE =
-    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea, [tabindex]:not([tabindex="-1"])';
+    'a[href], summary, button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea, [tabindex]:not([tabindex="-1"])';
 const openedFrom = new Map();
 // Frames to wait for a list that is redrawn after closing (about one second).
 const REFOCUS_FRAMES = 60;
