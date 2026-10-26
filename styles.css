@@ -2609,14 +2609,29 @@ button.acc-avatar:hover,
     height: 52px;
 }
 
+/* En el teléfono, más bajo: sin la línea de contenido, para que el botón
+   principal del inicio siga a la vista sin desplazarse. */
 @media (max-width: 640px) {
     .promo-slide {
         min-height: 0;
-        padding: 22px 18px 40px;
+        padding: 16px 16px 30px;
     }
 
+    .promo-body h2 {
+        font-size: 24px;
+    }
+
+    .promo-text,
     .promo-art {
         display: none;
+    }
+
+    .promo .promo-actions {
+        margin-top: 4px;
+    }
+
+    .promo-controls {
+        bottom: 8px;
     }
 }
 
