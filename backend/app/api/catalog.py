@@ -33,8 +33,8 @@ from app.schemas.catalog import (
     PrintingView,
     SetView,
 )
+from app.services import card_views, rarities, recommendations
 from app.services import product_images as product_photos
-from app.services import rarities, recommendations
 from app.services.banlists import current_lists, list_view, statuses_for_cards
 from app.services.card_types import ATTRIBUTES, RACES, taxonomy
 from app.services.catalog import card_detail, card_summary, errata_views, printing_view
@@ -188,7 +188,7 @@ def cards_for_you(
 ):
     """The home page's own section for each person, from the cards they opened."""
     viewed = []
-    for value in ids.split(",")[:24]:
+    for value in ids.split(",")[: card_views.KEEP]:
         try:
             viewed.append(UUID(value.strip()))
         except ValueError:

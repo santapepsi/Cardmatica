@@ -1,5 +1,8 @@
 """The home section for each person: the cards they opened, and cards like them."""
 
+from sqlalchemy import func, select
+
+from app.models import CardView
 from app.schemas.ingestion import GroupInput, NameInput, PrintingInput
 from app.services import passwords
 from app.services.ingestion import IngestionService
@@ -72,5 +75,9 @@ def test_an_account_keeps_its_latest_opened_cards(client, factory, record, setti
     assert client.get("/api/v1/account/viewed").json() == {"card_ids": [second, first]}
     exported = client.get("/api/v1/account/export").json()
     assert exported["viewed_cards"] == [second, first]
-    client.cookies.clear()
+    # They go with the account.
+    gone = client.post("/api/v1/account/delete", json={"password": PASSWORD})
+    assert gone.status_code == 204
+    with factory() as session:
+        assert session.scalar(select(func.count()).select_from(CardView)) == 0
     assert client.get("/api/v1/account/viewed").status_code == 401
