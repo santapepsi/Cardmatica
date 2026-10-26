@@ -1287,6 +1287,8 @@ document.addEventListener("keydown", (event) => {
 // abierta; al cerrarse, el foco vuelve a lo que la abrió.
 const FOCUSABLE =
     'a[href], summary, button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea, [tabindex]:not([tabindex="-1"])';
+// Visible y alcanzable: también descarta lo que está dentro de un <details> cerrado.
+const shown = (item) => (item.checkVisibility ? item.checkVisibility() : Boolean(item.offsetParent));
 const openedFrom = new Map();
 // Frames to wait for a list that is redrawn after closing (about one second).
 const REFOCUS_FRAMES = 60;
@@ -1331,7 +1333,7 @@ document.addEventListener("keydown", (event) => {
     if (event.key !== "Tab") return;
     const dialog = ["cart", "md"].map(byId).find((element) => element.classList.contains("on"));
     if (!dialog) return;
-    const items = [...dialog.querySelectorAll(FOCUSABLE)].filter((item) => item.offsetParent);
+    const items = [...dialog.querySelectorAll(FOCUSABLE)].filter(shown);
     if (!items.length) return;
     const first = items[0];
     const last = items.at(-1);
