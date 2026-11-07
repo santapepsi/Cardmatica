@@ -18,7 +18,7 @@
 // frontend/js/catalog.js sustituye showTab y refreshList para las pestañas del
 // catálogo real y llama a las versiones de aquí solo para la tienda demo.
 
-/* global DEMO, I18N, t, GAMES, GAME_TAB_LABELS, gameFromPath, gameOfMarket, marketTagText */
+/* global DEMO, I18N, t, GAMES, GAME_TAB_LABELS, gameFromPath, gameOfMarket, marketTagText, pokemonWord */
 // Los textos van en español y pasan por t() (frontend/i18n.js), que devuelve
 // la versión del idioma de la página.
 
@@ -409,11 +409,6 @@ function cardKinds(card) {
     if (card.game === "magic") return [card.typeLine];
     if (card.game === "pokemon") return [kindName(card.kind), ...card.subtypes.map(pokemonWord), ...card.types.map(pokemonWord)];
     return [kindName(card.kind), ...card.subtypes.map((subtype) => t(subtype))];
-}
-
-// Pokémon's own words (stages, energy types) as the catalogue names them.
-function pokemonWord(word) {
-    return t(DEMO.pokemonWords[word] || word);
 }
 
 function cardChips(card) {

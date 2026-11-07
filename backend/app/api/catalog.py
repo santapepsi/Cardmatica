@@ -517,28 +517,12 @@ def game_taxonomy(game):
     if game == "magic":
         return {"kinds": scryfall.MAIN_TYPES, "colors": scryfall.COLORS}
     return {
-        "kinds": ["Pokemon", "Trainer", "Energy"],
+        "kinds": tcgdex.CATEGORIES,
         "colors": tcgdex.ENERGY_TYPES,
-        "stages": POKEMON_STAGES,
-        "trainer_types": ["Item", "Supporter", "Stadium", "Tool"],
-        "energy_types": ["Normal", "Special"],
+        "stages": tcgdex.STAGES,
+        "trainer_types": tcgdex.TRAINER_TYPES,
+        "energy_types": tcgdex.ENERGY_KINDS,
     }
-
-
-# Evolution stages and other card kinds of Pokémon, in the order of a deck list.
-POKEMON_STAGES = [
-    "Basic",
-    "Stage1",
-    "Stage2",
-    "MEGA",
-    "VMAX",
-    "VSTAR",
-    "V-UNION",
-    "BREAK",
-    "LEVEL-UP",
-    "RESTORED",
-    "Baby",
-]
 
 
 @router.get("/facets")

@@ -7,8 +7,6 @@
 // este navegador; sin elección, el modo oscuro de siempre.
 (function () {
     var KEY = "cm_theme";
-    // Color de la barra del navegador en celulares, por tema.
-    var BAR_COLORS = { dark: "#0a1626", light: "#c7eaf8" };
     var root = document.documentElement;
 
     function stored() {
@@ -21,8 +19,11 @@
 
     function apply(theme) {
         root.dataset.theme = theme;
+        // La barra del navegador en celulares toma el color del tema y de la
+        // skin elegida (variable --bar de styles.css y de cada skin).
         var bar = document.querySelector('meta[name="theme-color"]');
-        if (bar) bar.content = BAR_COLORS[theme];
+        var color = getComputedStyle(root).getPropertyValue("--bar").trim();
+        if (bar && color) bar.content = color;
         var button = document.getElementById("theme");
         if (!button) return;
         var light = theme === "light";

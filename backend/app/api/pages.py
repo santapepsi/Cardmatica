@@ -36,6 +36,10 @@ LEGAL_PAGES = {"terminos", "privacidad", "normas", "cookies", "reembolsos", "avi
 # One footer for every page: legal links, language and the cookie notice.
 FOOTER = PAGES / "footer.html"
 _FOOTER = re.compile(r'<footer class="site-footer">.*?</footer>', re.S)
+# The secret skins (frontend/skin.js): their stylesheets, by versioned address,
+# inside a <template>, so none is downloaded until someone picks it.
+SKINS = PAGES / "skins.html"
+_SKINS = re.compile(r'<template class="skins"></template>')
 # The legal notice's details (settings business_*), one <dd data-business="…">.
 _BUSINESS = re.compile(r'<dd data-business="(\w+)"></dd>')
 # Search engines read at most 50,000 addresses per sitemap file.
@@ -118,6 +122,7 @@ def render(
     translated = file.with_name(f"{file.stem}.{lang}{file.suffix}")
     page = (translated if translated.is_file() else file).read_text(encoding="utf-8")
     page = _FOOTER.sub(lambda _: FOOTER.read_text(encoding="utf-8").strip(), page, count=1)
+    page = _SKINS.sub(lambda _: SKINS.read_text(encoding="utf-8").strip(), page, count=1)
     page = _BUSINESS.sub(_business_detail, page)
     if lang != languages.DEFAULT:
         page = translate_static(page, lang)

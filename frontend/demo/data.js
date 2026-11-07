@@ -166,31 +166,6 @@ DEMO.energyColors = {
     Entrenador: "#5a6b82",
     Energia: "#6d7f3a"
 };
-// Pokémon's words (stages, trainer kinds, energy types) as the Spanish cards
-// print them (TCGdex's translations); t() gives the Portuguese and English ones.
-DEMO.pokemonWords = {
-    Basic: "Básico",
-    Stage1: "Fase 1",
-    Stage2: "Fase 2",
-    ex: "ex",
-    Supporter: "Partidario",
-    Item: "Objeto",
-    Stadium: "Estadio",
-    Tool: "Herramienta",
-    Normal: "Básica",
-    Special: "Especial",
-    Grass: "Planta",
-    Fire: "Fuego",
-    Water: "Agua",
-    Lightning: "Rayo",
-    Psychic: "Psíquico",
-    Fighting: "Lucha",
-    Darkness: "Oscura",
-    Metal: "Metálica",
-    Dragon: "Dragón",
-    Fairy: "Hada",
-    Colorless: "Incolora"
-};
 
 // Idiomas. El de cada carta sale del código de su impresión (LOB-EN001 es
 // inglés, RC04-JP003 japonés; los códigos sin idioma, como SDK-001, son de la

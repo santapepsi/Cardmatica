@@ -40,6 +40,24 @@ ENERGY_TYPES = [
 ]
 # The finishes a printing comes in (TCGdex's variants), in the order they are shown.
 FINISHES = ["normal", "holo", "reverse", "firstEdition"]
+# The kinds of card, in the order of a deck list and of the filters.
+CATEGORIES = ["Pokemon", "Trainer", "Energy"]
+# Evolution stages and other kinds of Pokémon.
+STAGES = [
+    "Basic",
+    "Stage1",
+    "Stage2",
+    "MEGA",
+    "VMAX",
+    "VSTAR",
+    "V-UNION",
+    "BREAK",
+    "LEVEL-UP",
+    "RESTORED",
+    "Baby",
+]
+TRAINER_TYPES = ["Item", "Supporter", "Stadium", "Tool"]
+ENERGY_KINDS = ["Normal", "Special"]
 # TCG Pocket is a phone game: its "sets" are not printed cards.
 DIGITAL_SERIES = {"tcgp"}
 

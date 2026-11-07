@@ -1,5 +1,7 @@
 import { installAccountMenu } from "./account-menu.js";
 import { installLanguageMenu } from "./language-menu.js";
+import { installSkinPicker } from "./skin-picker.js";
+import { installTabScroll } from "./tab-scroll.js";
 import { installPromo } from "./promo.js";
 import { track, trackPage } from "./analytics.js";
 import { installAdmin, renderAdmin } from "./admin.js";
@@ -923,6 +925,7 @@ document.addEventListener(
 const { hidePreview } = installCardPreview({ lookup: (id) => knownCards.get(id) });
 installBackToTop({ focus: element("q") });
 installHeaderScroll();
+installTabScroll(element("tabs"));
 
 // ---- Keyboard shortcut and back to top ----------------------------------------
 
@@ -1013,6 +1016,7 @@ installAuth({
 });
 installAccountMenu();
 installLanguageMenu();
+installSkinPicker({ search: element("q") });
 installAdmin();
 // The home page's call to action and "Para ti" depend on who is signed in.
 document.addEventListener("cm:account", async () => {

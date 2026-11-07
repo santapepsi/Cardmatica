@@ -106,8 +106,9 @@ operaciones se reintentaron con éxito, conservando el catálogo sin duplicados.
    pero no contiene impresiones OCG. YGOPRODeck no ofrece traducción al español ni
    japonés en esta API. El idioma mostrado se conserva y no se fabrica una traducción.
 5. **Banlists oficiales fechadas:** los estados actuales de YGOPRODeck no documentan
-   fecha de vigencia; el modo banlist se rechaza explícitamente. Se preserva el
-   historial previo y no se etiqueta una lista comunitaria como oficial.
+   fecha de vigencia, así que no hay sincronización de banlists: las listas fechadas
+   se importan con `import-banlist`. Se preserva el historial previo y no se
+   etiqueta una lista comunitaria como oficial.
 6. **Carga completa:** se dejó la muestra solicitada, sin ejecutar una ingesta
    masiva. initial/incremental, checkpoints y reanudación están disponibles por CLI
    o worker independiente. La ampliación debe revisar también los casos de la fuente

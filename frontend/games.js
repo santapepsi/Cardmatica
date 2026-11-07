@@ -9,7 +9,7 @@
 // A classic script, loaded before the demo store and the modules, which read
 // window.GAMES. Labels are in Spanish and go through t() where they are shown.
 
-/* exported GAMES, GAME_ORDER, GAME_TAB_LABELS, gameFromPath, gameOfMarket, marketInfo, marketTagText */
+/* exported GAMES, GAME_ORDER, GAME_TAB_LABELS, gameFromPath, gameOfMarket, marketInfo, marketTagText, pokemonWord */
 var GAMES = {
     yugioh: {
         name: "Yu-Gi-Oh!",
@@ -73,7 +73,42 @@ var GAMES = {
         ],
         tabs: ["Inicio", "Todas", "Pokemon", "Entrenador", "Energia", "Productos", "Vendedores", "Deseados"],
         params: { Pokemon: { card_type: "Pokemon" }, Entrenador: { card_type: "Trainer" }, Energia: { card_type: "Energy" } },
-        search: "Nombre, set o número"
+        search: "Nombre, set o número",
+        // Its own words (kinds, stages, energy types) as the Spanish cards print
+        // them, TCGdex's translations; pokemonWord() below says them.
+        words: {
+            Pokemon: "Pokémon",
+            Trainer: "Entrenador",
+            Energy: "Energía",
+            Basic: "Básico",
+            Stage1: "Fase 1",
+            Stage2: "Fase 2",
+            MEGA: "MEGA",
+            VMAX: "VMAX",
+            VSTAR: "V-ASTRO",
+            "V-UNION": "V-UNIÓN",
+            BREAK: "TURBO",
+            "LEVEL-UP": "LEVEL-UP",
+            RESTORED: "Recreado",
+            Baby: "Bebé",
+            Supporter: "Partidario",
+            Item: "Objeto",
+            Stadium: "Estadio",
+            Tool: "Herramienta",
+            Normal: "Básica",
+            Special: "Especial",
+            Grass: "Planta",
+            Fire: "Fuego",
+            Water: "Agua",
+            Lightning: "Rayo",
+            Psychic: "Psíquico",
+            Fighting: "Lucha",
+            Darkness: "Oscura",
+            Metal: "Metálica",
+            Dragon: "Dragón",
+            Fairy: "Hada",
+            Colorless: "Incolora"
+        }
     }
 };
 var GAME_ORDER = ["yugioh", "magic", "pokemon"];
@@ -116,6 +151,13 @@ function gameOfMarket(code) {
 function marketInfo(code) {
     var game = GAMES[gameOfMarket(code)];
     return game ? game.markets.find((market) => market.code === code) : null;
+}
+
+// A word of Pokémon as the site says it, in the visitor's language: "Stage1" →
+// "Fase 1"; a word it does not know stays as it is ("ex").
+function pokemonWord(word) {
+    var spanish = GAMES.pokemon.words[word];
+    return spanish ? t(spanish) : word;
 }
 
 // What sets a market apart in a list: "OCG", "JP"; nothing for a game with one market.

@@ -194,41 +194,10 @@ function magicLine(card) {
     return [kind + legendary, card.details?.mana_cost].filter(Boolean).join(" · ");
 }
 
-// Pokémon's words as the Spanish cards print them (TCGdex's translations).
-export const POKEMON_WORDS = {
-    Pokemon: "Pokémon",
-    Trainer: "Entrenador",
-    Energy: "Energía",
-    Basic: "Básico",
-    Stage1: "Fase 1",
-    Stage2: "Fase 2",
-    MEGA: "MEGA",
-    VMAX: "VMAX",
-    VSTAR: "V-ASTRO",
-    "V-UNION": "V-UNIÓN",
-    BREAK: "TURBO",
-    "LEVEL-UP": "LEVEL-UP",
-    RESTORED: "Recreado",
-    Baby: "Bebé",
-    Supporter: "Partidario",
-    Item: "Objeto",
-    Stadium: "Estadio",
-    Tool: "Herramienta",
-    Normal: "Básica",
-    Special: "Especial",
-    Grass: "Planta",
-    Fire: "Fuego",
-    Water: "Agua",
-    Lightning: "Rayo",
-    Psychic: "Psíquico",
-    Fighting: "Lucha",
-    Darkness: "Oscura",
-    Metal: "Metálica",
-    Dragon: "Dragón",
-    Fairy: "Hada",
-    Colorless: "Incolora"
-};
-export const pokemonWord = (word) => (POKEMON_WORDS[word] ? t(POKEMON_WORDS[word]) : word);
+// Pokémon's words as the Spanish cards print them (frontend/games.js, shared
+// with the demo store).
+const POKEMON_WORDS = window.GAMES.pokemon.words;
+export const pokemonWord = window.pokemonWord;
 
 // "Pokémon · Fase 2 · ex · Fuego · 360 PS" · "Entrenador · Partidario" · "Energía · Básica"
 function pokemonLine(card) {

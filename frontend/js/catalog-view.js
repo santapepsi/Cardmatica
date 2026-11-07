@@ -2,7 +2,8 @@
 // the card window. Every value from the API goes through h() (escapeHtml).
 import { badgeHtml, banlistSectionHtml, statusFor } from "./banlist.js";
 import { formatDate, money } from "./format.js";
-import { MAGIC_COLORS, MAGIC_TYPES, pokemonWord, typeLine } from "./card-types.js";
+import { typeLine } from "./card-types.js";
+import { finishesText, gameStatsHtml, legalityHtml, legalitySection } from "./game-facts.js";
 import { escapeHtml, html } from "./html.js";
 import { lang, locale, t } from "./lang.js";
 import { scopeLink } from "./collections.js";
@@ -20,6 +21,9 @@ function section(title, content) {
             ${content}
         </section>`;
 }
+
+// Yu-Gi-Oh! has a banlist; Magic and Pokémon say where a card is legal (game-facts.js).
+const hasBanlist = (card) => Boolean(window.GAMES[card.game]?.banlist);
 
 // One row of the facts list beside the chart; empty values are left out.
 const factRow = (label, value) => (value ? `<div><dt>${h(t(label))}</dt><dd>${value}</dd></div>` : "");
@@ -398,190 +402,36 @@ function creditHtml(image) {
         </figcaption>`;
 }
 
-// Finishes a printing is sold in (Scryfall, TCGdex), in words.
-const FINISHES = {
-    nonfoil: "Normal",
-    foil: "Foil",
-    etched: "Foil grabado",
-    normal: "Normal",
-    holo: "Holo",
-    reverse: "Reverso holo",
-    firstEdition: "1.ª edición"
-};
-const finishesText = (printing) => (printing.finishes || []).map((finish) => t(FINISHES[finish] || finish)).join(", ");
-
-// Yu-Gi-Oh!'s banlist has its equivalent in the other games: Magic's banned and
-// restricted list, format by format, and Pokémon's Standard and Expanded, which
-// say where a card may be played. The data comes with each card (Scryfall, TCGdex).
-const FORMATS = {
-    standard: "Standard",
-    pioneer: "Pioneer",
-    modern: "Modern",
-    legacy: "Legacy",
-    vintage: "Vintage",
-    commander: "Commander",
-    pauper: "Pauper",
-    paupercommander: "Pauper Commander",
-    oathbreaker: "Oathbreaker",
-    premodern: "Premodern"
-};
-const LEGALITY = { legal: "Legal", not_legal: "No legal", banned: "Prohibida", restricted: "Restringida" };
-// Marks of the banlist badges (styles.css .bn-*).
-const LEGALITY_BADGE = {
-    legal: ["ok", "✓"],
-    not_legal: ["unknown", "–"],
-    banned: ["forbidden", "✕"],
-    restricted: ["limited", "1"]
-};
-const MAGIC_LIST = "https://magic.wizards.com/en/banned-restricted-list";
-
-// Each format with its state: [name, state] in the order players know them.
-function legalities(card) {
-    if (card.game === "magic") {
-        const formats = card.details?.legalities || {};
-        return Object.entries(FORMATS)
-            .filter(([key]) => formats[key])
-            .map(([key, name]) => [name, formats[key]]);
-    }
-    if (card.game === "pokemon") {
-        const legal = card.details?.legal || {};
-        return [
-            ["Standard", legal.standard],
-            ["Expanded", legal.expanded]
-        ]
-            .filter(([, value]) => value != null)
-            .map(([name, value]) => [name, value ? "legal" : "not_legal"]);
-    }
-    return [];
-}
-
-// One line among the card's facts: the formats where it is legal, and those
-// where it is banned or restricted.
-function legalityHtml(card) {
-    const items = legalities(card)
-        .filter(([, state]) => state !== "not_legal")
-        .map(([name, state]) => `<span class="fmt" data-legal="${h(state)}">${h(name)}${state === "legal" ? "" : ` · ${h(t(LEGALITY[state]))}`}</span>`)
-        .join("");
-    return items ? `<span class="fmts">${items}</span>` : h(t("No legal en torneos"));
-}
-
-function legalityRow([name, state]) {
-    const [tone, mark] = LEGALITY_BADGE[state] || LEGALITY_BADGE.not_legal;
-    const label = t(LEGALITY[state] || state);
-    return html`
-        <div class="bl-row">
-            <span class="bn bn-${tone}" aria-hidden="true">${mark}</span>
-            <div><b>${h(name)} · ${h(label)}</b></div>
-        </div>`;
-}
-
-// The section in place of the banlist, for Magic and Pokémon.
-function legalitySectionHtml(card) {
-    const rows = legalities(card).map(legalityRow).join("");
-    if (card.game === "magic") {
-        const note = t("Según la lista de prohibidas y restringidas de Wizards of the Coast. Una carta restringida admite una sola copia en el mazo.");
-        const link = `<a href="${MAGIC_LIST}" target="_blank" rel="noopener noreferrer">${t("Lista oficial")}</a>`;
-        const body = rows || `<p class="catalog-status">${t("Todavía no hay datos de formatos para esta carta.")}</p>`;
-        return `<section class="catalog-section"><h3>${t("Prohibidas y restringidas")}</h3>${body}<p class="catalog-status">${note} ${link}</p></section>`;
-    }
-    const mark = card.details?.regulation_mark;
-    const regulation = mark
-        ? `<p class="catalog-status">${h(t("Marca de regulación {mark}: Standard admite solo las marcas vigentes de la temporada.", { mark }))}</p>`
-        : "";
-    const note = t("Pokémon no tiene una banlist como la de Yu-Gi-Oh!: Standard cambia con cada rotación y Expanded tiene su propia lista de cartas prohibidas.");
-    const body = rows || `<p class="catalog-status">${t("Todavía no hay datos de legalidad para esta carta.")}</p>`;
-    return `<section class="catalog-section"><h3>${t("Legalidad en torneos")}</h3>${body}${regulation}<p class="catalog-status">${note}</p></section>`;
-}
-
-// Magic's mana cost as small coloured symbols ({2}{G} → ②🟢), with the cost in words for readers.
-export function manaHtml(cost) {
-    if (!cost) return "";
-    const symbols = cost.match(/\{[^}]+\}/g) || [];
-    const marks = symbols
-        .map((symbol) => {
-            const value = symbol.slice(1, -1);
-            const color = MAGIC_COLORS[value] ? value : /^\d+$/.test(value) || value === "X" ? "N" : "H";
-            return `<span class="mana" data-c="${color}" aria-hidden="true">${h(value)}</span>`;
-        })
-        .join("");
-    return `<span class="mana-cost" role="img" aria-label="${h(t("Coste de maná {cost}", { cost }))}">${marks}</span>`;
-}
-
+// The chosen printing's facts. Yu-Gi-Oh! adds its edition and banlist state;
+// Magic and Pokémon, their finishes and the formats where they are legal.
 function factsHtml(card, printings, printing, market) {
     if (!printing) return `<p class="empty">${t("No hay impresiones documentadas para este mercado.")}</p>`;
-    if (card.game !== "yugioh") return gameFactsHtml(card, printings, printing);
     // Several printings: a list to pick one, with pages when they do not fit.
     const pages = printings.total > printings.page_size ? pager(printings, "printing") : "";
     const choice =
         printings.items.length > 1
             ? `<select id="catalog-printing" aria-label="${t("Impresión")}">${printingOptionsHtml(printings.items, printing.id)}</select>${pages}`
             : "";
+    // Pokémon cards print their number over the set's size ("001/090"); the rest, their code.
+    const number = card.details?.number || printing.code;
     const banlist = statusFor(card, market);
-    return [
-        factRow("Rareza", rarityBadge(printing)),
-        factRow("Número", h(printing.code)),
-        factRow("Impreso en", scopeLink("set", printing.set_id, printing.set_name)),
-        choice ? factRow("Impresión", choice) : "",
-        factRow("Idioma", h(languageName(printing.language))),
-        factRow("Edición", h(editionName(printing.edition))),
-        factRow("Lanzamiento", printing.release_date ? h(formatDate(printing.release_date)) : ""),
-        factRow("Banlist", banlist ? `${badgeHtml(banlist)} ${h(banlistLabel(banlist))}` : "")
-    ].join("");
-}
-
-// Magic and Pokémon: the printing's rarity, number, set, language and finishes,
-// then where the card may be played.
-function gameFactsHtml(card, printings, printing) {
-    const pages = printings.total > printings.page_size ? pager(printings, "printing") : "";
-    const choice =
-        printings.items.length > 1
-            ? `<select id="catalog-printing" aria-label="${t("Impresión")}">${printingOptionsHtml(printings.items, printing.id)}</select>${pages}`
-            : "";
-    const number = card.game === "pokemon" && card.details?.number ? card.details.number : printing.code;
     return [
         factRow("Rareza", rarityBadge(printing)),
         factRow("Número", h(number)),
         factRow("Impreso en", scopeLink("set", printing.set_id, printing.set_name)),
         choice ? factRow("Impresión", choice) : "",
         factRow("Idioma", h(languageName(printing.language))),
-        factRow("Acabados", h(finishesText(printing))),
+        hasBanlist(card) ? factRow("Edición", h(editionName(printing.edition))) : factRow("Acabados", h(finishesText(printing))),
         factRow("Lanzamiento", printing.release_date ? h(formatDate(printing.release_date)) : ""),
-        factRow("Legal en", legalityHtml(card))
+        hasBanlist(card)
+            ? factRow("Banlist", banlist ? `${badgeHtml(banlist)} ${h(banlistLabel(banlist))}` : "")
+            : factRow("Legal en", legalityHtml(card))
     ].join("");
-}
-
-// What is printed on a Magic or Pokémon card, as one line under its facts.
-function gameStatsHtml(card) {
-    const details = card.details || {};
-    if (card.game === "magic") {
-        const types = (card.subtypes || []).filter((word) => MAGIC_TYPES[word]);
-        return [
-            h(details.type_line || types.join(" ")),
-            manaHtml(details.mana_cost),
-            details.power != null ? h(`${details.power}/${details.toughness}`) : "",
-            details.loyalty != null ? h(t("Lealtad {number}", { number: details.loyalty })) : "",
-            details.defense != null ? h(t("Defensa {number}", { number: details.defense })) : ""
-        ]
-            .filter(Boolean)
-            .join(" · ");
-    }
-    const weakness = (details.weaknesses || []).map(pokemonWord).join(", ");
-    const resistance = (details.resistances || []).map(pokemonWord).join(", ");
-    return [
-        h(typeLine(card)),
-        details.evolves_from ? h(t("Evoluciona de {name}", { name: details.evolves_from })) : "",
-        weakness ? h(t("Debilidad: {types}", { types: weakness })) : "",
-        resistance ? h(t("Resistencia: {types}", { types: resistance })) : "",
-        details.retreat != null ? h(t("Retirada {number}", { number: details.retreat })) : "",
-        details.illustrator ? h(t("Ilustración: {name}", { name: details.illustrator })) : ""
-    ]
-        .filter(Boolean)
-        .join(" · ");
 }
 
 // The type line (card-types.js), then the numbers printed on the card.
 function statsLine(card) {
-    if (card.game && card.game !== "yugioh") return gameStatsHtml(card);
+    if (!hasBanlist(card)) return gameStatsHtml(card);
     const defense = card.defense != null ? ` / DEF ${card.defense}` : "";
     return [
         typeLine(card),
@@ -682,7 +532,7 @@ export function detailHtml(card, printings, selectedId, { market = "TCG" } = {})
             ${classificationHtml(card)}
             ${section("Erratas documentadas", errataHtml(card))}
             ${section("Versiones históricas y textos comunitarios", textHistoryHtml(card))}
-            ${card.game === "magic" || card.game === "pokemon" ? legalitySectionHtml(card) : banlistSectionHtml(card, market)}
+            ${hasBanlist(card) ? banlistSectionHtml(card, market) : section(...legalitySection(card))}
             ${sources ? `<details class="cd-sources"><summary>${t("Procedencia")}</summary><ul>${sources}</ul></details>` : ""}
         </div>`;
 }

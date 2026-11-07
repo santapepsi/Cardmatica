@@ -107,7 +107,9 @@ async function renderVerify(container) {
 // The same fields appear in several forms.
 const emailField = (label) =>
     `<label>${t(label)}<input id="auth-email" type="email" autocomplete="email" required maxlength="254"></label>`;
-const checkbox = (id, label) => `<label class="check"><input id="${id}" type="checkbox" required> ${label}</label>`;
+// The text in its own <span>: the label lays out the box and the text side by
+// side, and the links inside the text flow with it.
+const checkbox = (id, label) => `<label class="check"><input id="${id}" type="checkbox" required><span>${label}</span></label>`;
 
 function forgotForm() {
     return html`
@@ -134,7 +136,7 @@ function loginForm() {
         <form class="gl pnl fm-stack" id="auth-login" novalidate>
             ${emailField("Correo")}
             <label>${t("Contraseña")}<input id="auth-password" type="password" autocomplete="current-password" required maxlength="200"></label>
-            <label class="check"><input id="auth-remember" type="checkbox"> ${t("Mantener la sesión iniciada en este equipo")}</label>
+            <label class="check"><input id="auth-remember" type="checkbox"><span>${t("Mantener la sesión iniciada en este equipo")}</span></label>
             <button class="btn" type="submit">${t("Iniciar sesión")}</button>
             <button class="lk" type="button" data-auth-mode="forgot">${t("¿Olvidaste tu contraseña?")}</button>
         </form>`;

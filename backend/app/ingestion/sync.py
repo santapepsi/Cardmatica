@@ -18,7 +18,6 @@ from app.integrations.yugipedia.client import YugipediaClient
 from app.models import CardArtwork, CardImage, SyncError, SyncJob
 from app.repositories.ingestion import conflict
 from app.schemas.catalog import JobRequest
-from app.schemas.ingestion import BanlistInput
 from app.services.images import ImageService, eligible_images
 from app.services.ingestion import PROVIDERS, IngestionService
 from app.services.reconciliation import IdentityConflict
@@ -184,13 +183,6 @@ class SyncRunner:
         """What to process next: (items, cursor of the batch after, whether it is the last)."""
         if request.mode in {"card", "errata"}:
             return [request.identifier], {}, True
-        if request.mode == "banlist":
-            items = await client.banlist(
-                language=request.language,
-                format=request.banlist_format,
-                effective_date=request.effective_date,
-            )
-            return items, {}, True
         if request.mode == "images":
             return [{"identifier": request.identifier, "mode": "images_metadata"}], {}, True
         if request.mode == "retry":
@@ -240,8 +232,6 @@ class SyncRunner:
             return []
         if request.max_printings:
             record.printings = pick_printings(record.printings, request.max_printings)
-        if mode == "banlist":
-            record.banlist = [BanlistInput.model_validate(item["banlist"])]
         if mode == "errata":
             if request.source != "yugipedia":
                 raise ValueError("La documentación de erratas comunitarias usa Yugipedia")
@@ -269,8 +259,6 @@ class SyncRunner:
         """Keep the error so `sync … retry` can try the item again later."""
         logger.warning("sync_job=%s identifier=%s error=%s", job_id, identifier, type(exc).__name__)
         payload = {"mode": mode}
-        if isinstance(item, dict) and "banlist" in item:
-            payload["banlist"] = item["banlist"]
         with self.factory.begin() as session:
             session.get(SyncJob, job_id).failures += 1
             session.add(
