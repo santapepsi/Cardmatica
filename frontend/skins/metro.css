@@ -1,0 +1,411 @@
+/* Skin secreta «Frutiger Metro»: mosaicos.
+
+   La estética de 2010 a 2013 (Windows Phone, Zune, Windows 8): colores planos
+   y vivos, esquinas rectas, sin vidrio ni sombras, letras finas y grandes, las
+   pestañas en minúscula como los encabezados de un pivote. Oscuro: negro puro;
+   claro: blanco. Cada mercado toma el color de su juego (frontend/games.js),
+   y en la portada cada juego es un mosaico de su color.
+
+   Se descarga solo si alguien la elige (frontend/skin.js). Toda regla empieza
+   por [data-skin="metro"], así el archivo no cambia nada mientras esa skin no
+   está puesta (backend/tests/test_skins.py lo comprueba). */
+
+/* ---- Colores: modo oscuro ------------------------------------------------------ */
+
+[data-skin="metro"] {
+    color-scheme: dark;
+    --font: "Segoe UI", Selawik, "Helvetica Neue", Roboto, Arial, sans-serif;
+    --font-head: "Segoe UI Light", "Segoe UI", Selawik, "Helvetica Neue", Roboto, Arial, sans-serif;
+    --r-xs: 0;
+    --r-sm: 0;
+    --r: 0;
+    --r-lg: 0;
+    --r-pill: 0;
+    /* El color de acento: cian de Windows Phone; cada juego tiene el suyo (abajo). */
+    --accent: #1ba1e2;
+    --tx: #ffffff;
+    --mu: #a6a6a6;
+    --ac: var(--accent);
+    --bd: #2e2e2e;
+    --gl: #1c1c1c;
+    --line: 255, 255, 255;
+    --tint: 255, 255, 255;
+    --shade: 0, 0, 0;
+    --page: #000000;
+    --backdrop: #000000;
+    --pop: #1f1f1f;
+    --pop-a: #1f1f1f;
+    --tip: #2b2b2b;
+    --box: #1c1c1c;
+    --scrim: rgba(0, 0, 0, .82);
+    --field: #f2f2f2;
+    --btn: var(--accent);
+    --btn-line: 255, 255, 255;
+    --on-btn: #ffffff;
+    --price: #ffffff;
+    --good: #8cbf26;
+    --bad: #ff5a4d;
+    --gold: #f09609;
+    --warn: #f0a30a;
+    --info: #1ba1e2;
+    --ocg: #ff6b5e;
+    --c1: #1ba1e2;
+    --c2: #f09609;
+    --c3: #d80073;
+    --c4: #8cbf26;
+    --c5: #e51400;
+    --c6: #a200ff;
+    --bar: #000000;
+}
+
+/* Cada mercado en el color de su juego, más vivo que el de su caja. */
+[data-skin="metro"][data-game="yugioh"] {
+    --accent: #7f3fbf;
+}
+
+[data-skin="metro"][data-game="magic"] {
+    --accent: #e51400;
+}
+
+[data-skin="metro"][data-game="pokemon"] {
+    --accent: #f09609;
+}
+
+/* ---- Modo claro --------------------------------------------------------------- */
+
+[data-skin="metro"][data-theme="light"] {
+    color-scheme: light;
+    --tx: #000000;
+    --mu: #595959;
+    --ac: var(--accent);
+    --bd: #d9d9d9;
+    --gl: #f2f2f2;
+    --line: 0, 0, 0;
+    --tint: 0, 0, 0;
+    --shade: 0, 0, 0;
+    --page: #ffffff;
+    --backdrop: #ffffff;
+    --pop: #ffffff;
+    --pop-a: #ffffff;
+    --tip: #ffffff;
+    --box: #ffffff;
+    --scrim: rgba(255, 255, 255, .85);
+    --field: #f2f2f2;
+    --btn: var(--accent);
+    --btn-line: 0, 0, 0;
+    --on-btn: #ffffff;
+    --price: #000000;
+    --good: #2f7d0f;
+    --bad: #c41000;
+    --gold: #9a5d00;
+    --warn: #8a5a00;
+    --info: #0b6aa0;
+    --ocg: #c41000;
+    --bar: #ffffff;
+}
+
+/* Los textos de color sobre blanco, un tono más oscuro para leerse bien. */
+[data-skin="metro"][data-theme="light"][data-game="pokemon"] {
+    --accent: #b46b00;
+}
+
+/* ---- Letras: finas y grandes; pestañas y títulos en minúscula -------------------- */
+
+[data-skin="metro"] body {
+    letter-spacing: .1px;
+}
+
+[data-skin="metro"] h1,
+[data-skin="metro"] .hero2 h1,
+[data-skin="metro"] .portal-hero h1 {
+    font-weight: 300;
+    letter-spacing: -.5px;
+}
+
+[data-skin="metro"] .sec-title,
+[data-skin="metro"] #tabs button,
+[data-skin="metro"] .logo {
+    text-transform: lowercase;
+    font-family: var(--font-head);
+    font-weight: 300;
+}
+
+[data-skin="metro"] .sec-title {
+    font-size: 26px;
+}
+
+[data-skin="metro"] .logo b {
+    font-weight: 600;
+}
+
+/* ---- Superficies planas: sin vidrio ni sombras --------------------------------- */
+
+[data-skin="metro"] .gl,
+[data-skin="metro"] .box,
+[data-skin="metro"] .suggest,
+[data-skin="metro"] .acc-menu,
+[data-skin="metro"] .lang-list,
+[data-skin="metro"] .toast,
+[data-skin="metro"] .tip,
+[data-skin="metro"] .card-preview,
+[data-skin="metro"] .to-top {
+    background: var(--gl);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 0;
+    box-shadow: none;
+}
+
+[data-skin="metro"] .box,
+[data-skin="metro"] .suggest,
+[data-skin="metro"] .acc-menu,
+[data-skin="metro"] .lang-list,
+[data-skin="metro"] .card-preview {
+    background: var(--pop);
+    border: 2px solid var(--bd);
+}
+
+[data-skin="metro"] #md,
+[data-skin="metro"] #cart {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+/* La cabecera, del color de la página: solo letras. */
+[data-skin="metro"] header.gl {
+    background: var(--page);
+}
+
+/* Las pestañas en una sola fila que se desliza, como un pivote. */
+[data-skin="metro"] #tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: none;
+    border-top: 0;
+}
+
+[data-skin="metro"] #tabs button {
+    flex: none;
+    white-space: nowrap;
+    font-size: 19px;
+    padding: 6px 12px 10px;
+    border-bottom: 0;
+}
+
+[data-skin="metro"] #tabs button[aria-pressed=true] {
+    color: var(--tx);
+}
+
+/* ---- Botones: rectángulos planos ------------------------------------------------ */
+
+[data-skin="metro"] .btn {
+    color: #fff;
+    border: 2px solid var(--accent);
+    box-shadow: none;
+    text-shadow: none;
+}
+
+[data-skin="metro"] .btn:hover {
+    filter: brightness(1.12);
+}
+
+/* El botón secundario: solo un borde, como en Windows Phone. */
+[data-skin="metro"] .ghost,
+[data-skin="metro"] .pill,
+[data-skin="metro"] .trend-tabs button,
+[data-skin="metro"] .lang-button,
+[data-skin="metro"] .acc-avatar {
+    background: transparent;
+    border: 2px solid var(--tx);
+    box-shadow: none;
+}
+
+[data-skin="metro"] .seg {
+    background: transparent;
+    border: 2px solid var(--tx);
+}
+
+[data-skin="metro"] .seg button[aria-pressed=true],
+[data-skin="metro"] .seg button[aria-checked=true],
+[data-skin="metro"] .trend-tabs button[aria-selected="true"],
+[data-skin="metro"] .pill[aria-pressed=true],
+[data-skin="metro"] .lang-list button[aria-checked="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: none;
+}
+
+/* Al tocar, los mosaicos y botones se hunden un poco. */
+[data-skin="metro"] .btn:active,
+[data-skin="metro"] .ghost:active,
+[data-skin="metro"] .card-tile:active,
+[data-skin="metro"] a.portal-game:active {
+    transform: scale(.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-skin="metro"] .btn:active,
+    [data-skin="metro"] .ghost:active,
+    [data-skin="metro"] .card-tile:active,
+    [data-skin="metro"] a.portal-game:active {
+        transform: none;
+    }
+}
+
+/* ---- Campos: claros, con borde de color al escribir ------------------------------ */
+
+[data-skin="metro"] input,
+[data-skin="metro"] select,
+[data-skin="metro"] textarea {
+    color: #000;
+    border: 2px solid transparent;
+    box-shadow: none;
+}
+
+[data-skin="metro"] input::placeholder {
+    color: #666;
+}
+
+[data-skin="metro"] input:focus,
+[data-skin="metro"] select:focus,
+[data-skin="metro"] textarea:focus {
+    background: #fff;
+    border-color: var(--accent);
+    outline: none;
+}
+
+[data-skin="metro"] select option {
+    background: #fff;
+    color: #000;
+}
+
+[data-skin="metro"][data-theme="light"] input,
+[data-skin="metro"][data-theme="light"] select,
+[data-skin="metro"][data-theme="light"] textarea {
+    border-color: #d9d9d9;
+}
+
+/* ---- Mosaicos: la portada, el inicio y el banner ---------------------------------- */
+
+/* Cada juego, un mosaico de su color con letras blancas. */
+[data-skin="metro"] .portal-game {
+    background: var(--g1);
+    color: #fff;
+    border: 0;
+    transition: transform .12s ease;
+}
+
+[data-skin="metro"] .portal-game::before {
+    display: none;
+}
+
+[data-skin="metro"] .portal-game .portal-line,
+[data-skin="metro"] .portal-game .portal-meta,
+[data-skin="metro"] .portal-game .portal-count {
+    color: rgba(255, 255, 255, .85);
+}
+
+[data-skin="metro"] .portal-game .portal-go {
+    background: transparent;
+    border: 2px solid #fff;
+}
+
+[data-skin="metro"] .portal-game.soon {
+    background: var(--gl);
+    color: var(--mu);
+}
+
+[data-skin="metro"] .portal-game.soon .portal-line {
+    color: var(--mu);
+}
+
+[data-skin="metro"] .portal-points {
+    background: transparent;
+}
+
+/* La bienvenida de cada mercado: un mosaico grande de su color. */
+[data-skin="metro"] .hero2 {
+    background: var(--accent);
+    color: #fff;
+}
+
+[data-skin="metro"] .hero2 h1 b,
+[data-skin="metro"] .portal-hero h1 b {
+    color: inherit;
+}
+
+[data-skin="metro"] .hero2 p {
+    color: rgba(255, 255, 255, .88);
+}
+
+[data-skin="metro"] .hero2 .btn {
+    background: #fff;
+    border-color: #fff;
+    color: #000;
+}
+
+[data-skin="metro"] .hero2 .ghost {
+    border-color: #fff;
+    color: #fff;
+}
+
+/* El banner sin foto: el degradado de Zune, de magenta a naranja. */
+[data-skin="metro"] .promo {
+    border: 0;
+    box-shadow: none;
+    background: linear-gradient(135deg, #d80073, #f09609);
+}
+
+[data-skin="metro"] .promo-slide {
+    background: linear-gradient(135deg, #d80073, #f09609);
+}
+
+[data-skin="metro"] .promo-slide::after {
+    background: linear-gradient(90deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, 0) 75%);
+}
+
+[data-skin="metro"] .promo-body h2 {
+    font-weight: 300;
+    text-shadow: none;
+}
+
+[data-skin="metro"] .promo .btn {
+    background: #fff;
+    border-color: #fff;
+    color: #000;
+}
+
+/* Las cartas: mosaicos planos que se marcan con el color al pasar. */
+[data-skin="metro"] .card-tile {
+    border: 2px solid transparent;
+}
+
+[data-skin="metro"] .card-tile:hover,
+[data-skin="metro"] .card-tile:focus-visible {
+    border-color: var(--accent);
+}
+
+/* ---- Tablas y pestañas de la ficha ---------------------------------------------- */
+
+[data-skin="metro"] .cd-tabs button {
+    background: transparent;
+    text-transform: lowercase;
+    font-size: 17px;
+}
+
+[data-skin="metro"] .cd-tabs button[aria-selected="true"] {
+    background: var(--accent);
+    color: #fff;
+}
+
+[data-skin="metro"] .catalog-row:hover td,
+[data-skin="metro"] tr.row:hover td {
+    background: rgba(var(--tint), .08);
+}
+
+[data-skin="metro"] :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}

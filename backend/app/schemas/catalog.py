@@ -277,7 +277,7 @@ class ArchetypeView(NamedView):
 
 class JobRequest(BaseModel):
     source: Literal["ygoprodeck", "yugipedia", "scryfall", "tcgdex"]
-    mode: Literal["initial", "incremental", "card", "images", "errata", "retry", "banlist"]
+    mode: Literal["initial", "incremental", "card", "images", "errata", "retry"]
     identifier: str | None = Field(default=None, max_length=200)
     language: Literal["en", "es", "fr", "de", "it", "pt", "ja", "ko", "ae"] = "en"
     since: datetime | None = None
@@ -286,8 +286,6 @@ class JobRequest(BaseModel):
     # Keep only this many printings per card, each of a different rarity
     # (see app/ingestion/selection.py). None imports every printing.
     max_printings: int | None = Field(default=None, ge=1, le=50)
-    banlist_format: Literal["TCG", "OCG"] | None = None
-    effective_date: date | None = None
     # Scryfall only: narrows the walk with its search syntax ("e:ecl" for one set).
     query: str | None = Field(default=None, max_length=300)
 
@@ -299,8 +297,6 @@ class JobRequest(BaseModel):
             raise ValueError(f"{self.source}: se importan en, es, pt y ja")
         if self.query and self.source != "scryfall":
             raise ValueError("query solo se usa con Scryfall")
-        if self.mode == "banlist":
-            raise ValueError("La nueva fuente no documenta vigencia de banlists oficiales")
         if self.mode in {"card", "errata", "images"} and not self.identifier:
             raise ValueError("Este modo requiere identifier")
         if self.mode == "incremental" and self.source == "yugipedia" and not self.since:

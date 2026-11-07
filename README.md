@@ -45,13 +45,15 @@ frontend/js/config.js           Valores ajustables del frontend (paginación, ti
 frontend/pages/, assets/        Páginas legales y 404; íconos e imagen Open Graph
 frontend/demo/data.js           Datos de la tienda demo: cartas, sets y productos reales; vendedores, precios y stock inventados
 frontend/theme.js               PROVISIONAL: botón de modo claro (Frutiger Aero) y oscuro
+frontend/skin.js, skins/, js/skin-picker.js  Skins secretas: Skeuomorfismo y Frutiger Metro
+frontend/js/game-facts.js       Ficha de Magic y Pokémon: acabados, maná y formatos donde es legal
 frontend/i18n.js, i18n/, js/lang.js  Idiomas: t(), diccionarios portugués e inglés
 frontend/demo/store.js          Tienda demo y piezas compartidas (pestañas, moneda, ventanas, carrito)
 backend/app/core/               Configuración, logging JSON, cabeceras de seguridad, caché y versiones de archivos
 backend/app/models/             Catálogo, procedencia, cuentas, wantlists y estadísticas
 backend/app/repositories/       SQL paginado y upserts
 backend/app/services/           Reconciliación, tipos de carta, rarezas, cuentas, correo, precios e imágenes
-backend/app/integrations/       HTTP respetuoso, YGOPRODeck y Yugipedia
+backend/app/integrations/       HTTP respetuoso, YGOPRODeck, Yugipedia, Scryfall (Magic) y TCGdex (Pokémon)
 backend/app/ingestion/          Normalización, checkpoints y worker
 backend/app/api/                Catálogo, cuentas, administración, estadísticas y páginas HTML
 backend/alembic/                Migraciones versionadas
@@ -256,8 +258,8 @@ docker compose exec -T api python scripts/validate_live_catalog.py --confirm-liv
 
 El modo images requiere vista local habilitada o permiso comercial por ilustración.
 Cuenta una operación de metadata y una por imagen; ajustar max-cards o reanudar.
-La sincronización de banlists fechadas se rechaza: YGOPRODeck no documenta la
-vigencia de sus estados actuales. No se inventan listas oficiales ni erratas a
+No hay sincronización de banlists: YGOPRODeck no documenta la vigencia de sus
+estados actuales; las listas fechadas se importan con `cardmatica import-banlist`. No se inventan listas oficiales ni erratas a
 partir de diferencias de texto. Las listas históricas existentes se conservan.
 
 ## Importar una exportación autorizada
@@ -419,6 +421,20 @@ de siempre y uno claro estilo Frutiger Aero; la elección queda en el navegador.
 los colores salen de las variables de `styles.css` (`:root` y
 `:root[data-theme="light"]`); para quitarlo, borrar `frontend/theme.js`, sus `<script>`,
 el botón `#theme` y los bloques marcados PROVISIONAL.
+
+**Skins secretas.** Otra apariencia para todo el sitio, con su modo claro y oscuro:
+*Skeuomorfismo* (tapete de fieltro, cuero cosido, madera y bronce) y *Frutiger Metro*
+(mosaicos planos de colores, como Windows Phone). Se elige en una ventana oculta que se
+abre con el código Konami (↑ ↑ ↓ ↓ ← → ← → B A, fuera de un campo de texto) o
+escribiendo `/skins` en la búsqueda, también en el teléfono. La elección queda en el
+navegador (`cm_skin`). Cada skin es una hoja de estilo en `frontend/skins/` que solo se
+descarga al elegirla: las páginas la listan en `<template class="skins">`
+(`frontend/pages/skins.html`) y `frontend/skin.js` la pone antes de pintar. Cambian las
+variables de `styles.css` (colores, letras `--font` y `--font-head`, esquinas `--r-*`)
+y el material de unas pocas piezas. Para sumar una: un archivo nuevo en `frontend/skins/`
+con todas sus reglas bajo `[data-skin="nombre"]`, su línea en `skins.html` y su
+descripción en `js/skin-picker.js`; `backend/tests/test_skins.py` comprueba que no toque
+nada mientras no está elegida.
 
 **Asistente de compra.** Como el Shopping Wizard de Cardmarket: arma la compra de una
 lista entre los vendedores, con «Menos envíos» o «Menor precio» (contando el envío de

@@ -673,10 +673,15 @@ def test_launch_checklist(live_server, browser_page, factory):
     assert page.locator("img:not([alt])").count() == 0
     page.locator("#list [data-catalog-card]").first.click()
     expect(page).to_have_title(re.compile("Synthetic Test Dragon"))
-    page.wait_for_load_state("networkidle")
-    with factory() as session:
-        keys = {row.key for row in session.scalars(select(UsageCount))}
-    assert {"tab:Inicio", "tab:Trampa", "carta"} <= keys
+    # The visit is counted by a request of its own; it may land a moment later.
+    expected = {"tab:Inicio", "tab:Trampa", "carta"}
+    for _ in range(50):
+        with factory() as session:
+            keys = {row.key for row in session.scalars(select(UsageCount))}
+        if expected <= keys:
+            break
+        page.wait_for_timeout(100)
+    assert expected <= keys
     assert not errors
 
 
@@ -1070,3 +1075,41 @@ def test_cover_opens_each_marketplace(live_server, browser_page):
     # The logo goes back to the cover.
     page.locator(".logo").first.click()
     expect(page.locator("html")).to_have_attribute("data-screen", "portal")
+
+
+def test_secret_skins(live_server, browser_page):
+    page = browser_page
+    page.goto(f"{live_server}/yugioh")
+    expect(page.locator("#home h1")).to_be_visible()
+    # Without a skin, none of their stylesheets is downloaded.
+    assert page.evaluate("document.head.querySelectorAll('link[data-skin]').length") == 0
+    # The Konami code opens the window, anywhere but in a text field.
+    for key in ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight"]:
+        page.keyboard.press(key)
+    for key in ["ArrowLeft", "ArrowRight", "b", "a"]:
+        page.keyboard.press(key)
+    picker = page.locator("#skin-picker")
+    expect(picker).to_be_visible()
+    expect(picker.locator("[data-skin-pick]")).to_have_count(3)
+    picker.locator('[data-skin-pick="metro"]').click()
+    expect(page.locator("html")).to_have_attribute("data-skin", "metro")
+    expect(picker.locator('[data-skin-pick="metro"]')).to_have_attribute("aria-pressed", "true")
+    # Square corners, the mark of Metro.
+    assert page.evaluate("getComputedStyle(document.querySelector('.hero2')).borderRadius") == "0px"
+    picker.locator(".skin-actions .btn").click()
+    expect(picker).to_be_hidden()
+    # Kept for the next visit and on from the first paint.
+    page.reload()
+    expect(page.locator("#home h1")).to_be_visible()
+    assert page.evaluate("document.documentElement.dataset.skin") == "metro"
+    assert page.evaluate("document.head.querySelectorAll('link[data-skin=\"metro\"]').length") == 1
+    # On phones: "/skins" in the search box opens it too, and is not searched.
+    page.fill("#q", "/skins")
+    expect(picker).to_be_visible()
+    expect(page.locator("#q")).to_have_value("")
+    picker.locator('[data-skin-pick=""]').click()
+    expect(page.locator("html")).not_to_have_attribute("data-skin", re.compile("."))
+    page.keyboard.press("Escape")
+    expect(picker).to_be_hidden()
+    page.reload()
+    assert page.evaluate("document.documentElement.dataset.skin") is None

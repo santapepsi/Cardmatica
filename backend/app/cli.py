@@ -2,7 +2,7 @@ import argparse
 import asyncio
 import json
 import sys
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
 from uuid import UUID
 
@@ -237,7 +237,7 @@ def build_parser() -> argparse.ArgumentParser:
     sync = commands.add_parser("sync", help="Importar o actualizar cartas desde una fuente")
     sync.add_argument("source", choices=["ygoprodeck", "yugipedia", "scryfall", "tcgdex"])
     sync.add_argument(
-        "mode", choices=["initial", "incremental", "card", "images", "errata", "retry", "banlist"]
+        "mode", choices=["initial", "incremental", "card", "images", "errata", "retry"]
     )
     sync.add_argument("--identifier")
     sync.add_argument("--language", default="en")
@@ -249,8 +249,6 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         help="Importar como máximo N impresiones por carta, cada una de una rareza distinta",
     )
-    sync.add_argument("--banlist-format", choices=["TCG", "OCG"])
-    sync.add_argument("--effective-date", type=date.fromisoformat)
     sync.add_argument(
         "--query", help="Scryfall: búsqueda que acota el recorrido, p. ej. «e:ecl» para un set"
     )
@@ -405,8 +403,6 @@ def run_sync(args, parser):
             retry_job_id=args.retry_job,
             max_cards=args.max_cards,
             max_printings=args.max_printings,
-            banlist_format=args.banlist_format,
-            effective_date=args.effective_date,
             query=args.query,
         )
         job_id = runner.enqueue(request)

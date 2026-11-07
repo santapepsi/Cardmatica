@@ -1,0 +1,381 @@
+/* Skin secreta «Skeuomorfismo»: la mesa de juego.
+
+   Oscuro: un tapete de fieltro verde, paneles de cuero cosido, la cabecera de
+   nogal y botones de bronce. Claro: un escritorio de roble, cartulina, la
+   cabecera de aluminio cepillado y los mismos botones de bronce. Las cartas
+   del catálogo van enfundadas, con el brillo del plástico.
+
+   Se descarga solo si alguien la elige (frontend/skin.js). Toda regla empieza
+   por [data-skin="skeuomorphism"], así el archivo no cambia nada mientras esa
+   skin no está puesta (backend/tests/test_skins.py lo comprueba). Las texturas
+   son SVG y degradados de CSS: no hay imágenes que descargar. */
+
+/* ---- Colores y materiales: modo oscuro ------------------------------------- */
+
+[data-skin="skeuomorphism"] {
+    color-scheme: dark;
+    /* Grano para el fieltro y el cuero: ruido en negro con transparencia. */
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --font-head: Rockwell, "Rockwell Nova", "Roboto Slab", "DejaVu Serif", Georgia, serif;
+    --r-xs: 3px;
+    --r-sm: 6px;
+    --r: 9px;
+    --r-lg: 12px;
+    --tx: #f3e7cd;
+    --mu: #c7b591;
+    --ac: #f2cf73;
+    --bd: rgba(var(--line), .22);
+    --gl: #2c1f16;
+    --line: 236, 205, 150;
+    --tint: 255, 236, 200;
+    --shade: 0, 0, 0;
+    --page: #173f2d;
+    --backdrop:
+        radial-gradient(130% 95% at 50% 32%, transparent 55%, rgba(0, 0, 0, .55) 100%),
+        var(--grain),
+        radial-gradient(1000px 560px at 50% 12%, #2d6e4f, transparent),
+        #1b4a34;
+    --pop: #2a1d14;
+    --pop-a: #2a1d14;
+    --tip: #f6ebcf;
+    --box: #2c1f16;
+    --scrim: rgba(6, 14, 9, .62);
+    --field: #1a120c;
+    --btn: linear-gradient(180deg, #f8e3a2 0%, #ddb253 46%, #c08f2c 54%, #e2bd63 100%);
+    --btn-line: 110, 78, 22;
+    --on-btn: #2b1d05;
+    --price: #f6d98e;
+    --good: #a6dfa0;
+    --bad: #ff9f8c;
+    --gold: #f2cf73;
+    --warn: #ffd98a;
+    --info: #f6e1a8;
+    --ocg: #ffb4a0;
+    --bar: #1b4a34;
+}
+
+/* ---- Modo claro: el escritorio de roble ------------------------------------- */
+
+[data-skin="skeuomorphism"][data-theme="light"] {
+    color-scheme: light;
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    --tx: #2d2418;
+    --mu: #6a5b45;
+    --ac: #1d6b47;
+    --bd: rgba(var(--line), .35);
+    --gl: #fbf6ea;
+    --line: 120, 90, 50;
+    --tint: 90, 60, 20;
+    --shade: 70, 45, 15;
+    --page: #c9a173;
+    --backdrop:
+        radial-gradient(130% 95% at 50% 30%, transparent 60%, rgba(70, 40, 10, .3) 100%),
+        var(--grain),
+        repeating-linear-gradient(90deg, transparent 0 9px, rgba(110, 62, 20, .07) 9px 10px, rgba(255, 240, 210, .06) 10px 23px),
+        repeating-linear-gradient(90deg, rgba(90, 50, 15, .08) 0 1px, transparent 1px 61px),
+        linear-gradient(180deg, #d9b98f, #c69c6b);
+    --pop: #fdf9f0;
+    --pop-a: #fdf9f0;
+    --tip: #fffaf0;
+    --box: #fbf6ea;
+    --scrim: rgba(60, 38, 14, .45);
+    --field: #fffdf8;
+    --btn: linear-gradient(180deg, #f8e3a2 0%, #ddb253 46%, #c08f2c 54%, #e2bd63 100%);
+    --btn-line: 110, 78, 22;
+    --on-btn: #2b1d05;
+    --price: #6b4a06;
+    --good: #1e6b38;
+    --bad: #a3301f;
+    --gold: #7a5600;
+    --warn: #6e4f00;
+    --info: #1d5b6b;
+    --ocg: #9b2f1f;
+    --bar: #c9a173;
+}
+
+/* ---- Texto: letras grabadas --------------------------------------------------- */
+
+[data-skin="skeuomorphism"] body {
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, .45);
+}
+
+[data-skin="skeuomorphism"][data-theme="light"] body {
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .6);
+}
+
+[data-skin="skeuomorphism"] .logo b {
+    color: var(--ac);
+}
+
+/* ---- Paneles: cuero cosido (oscuro) y cartulina (claro) -------------------- */
+
+[data-skin="skeuomorphism"] .gl,
+[data-skin="skeuomorphism"] .box {
+    background:
+        radial-gradient(140% 100% at 50% 0%, rgba(255, 225, 180, .08), transparent 60%),
+        var(--grain),
+        var(--gl);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid #0f0906;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 230, 190, .1),
+        inset 0 -2px 3px rgba(0, 0, 0, .35),
+        0 2px 2px rgba(0, 0, 0, .35),
+        0 12px 26px rgba(0, 0, 0, .45);
+}
+
+/* La costura, en los paneles que no son botones ni enlaces: en esos el contorno
+   es el foco del teclado. */
+[data-skin="skeuomorphism"] .gl:not(a, button, header, [tabindex]),
+[data-skin="skeuomorphism"] .box {
+    outline: 1px dashed rgba(236, 207, 150, .38);
+    outline-offset: -7px;
+}
+
+[data-skin="skeuomorphism"][data-theme="light"] .gl,
+[data-skin="skeuomorphism"][data-theme="light"] .box {
+    background: var(--grain), var(--gl);
+    border-color: #d8c9a8;
+    outline: none;
+    box-shadow:
+        inset 0 1px 0 #fff,
+        0 1px 1px rgba(70, 45, 15, .25),
+        0 8px 18px rgba(70, 45, 15, .22);
+}
+
+/* ---- Cabecera: nogal (oscuro) y aluminio cepillado (claro) ------------------ */
+
+[data-skin="skeuomorphism"] header.gl {
+    background:
+        linear-gradient(180deg, rgba(255, 210, 160, .16), rgba(0, 0, 0, .3)),
+        repeating-linear-gradient(91deg, transparent 0 6px, rgba(0, 0, 0, .12) 6px 7px, rgba(255, 220, 180, .04) 7px 13px),
+        repeating-linear-gradient(89deg, rgba(0, 0, 0, .1) 0 1px, transparent 1px 37px),
+        #5b3a22;
+    border-color: #1d110a;
+}
+
+[data-skin="skeuomorphism"][data-theme="light"] header.gl {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, .7), rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, .06)),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, .2) 0 1px, rgba(0, 0, 0, .04) 1px 2px, transparent 2px 3px),
+        #c9cdd2;
+    border-color: #8d939b;
+}
+
+/* Las pestañas: separadores de carpeta; la elegida, de papel. */
+[data-skin="skeuomorphism"] #tabs {
+    background: rgba(0, 0, 0, .2);
+    border-top-color: rgba(0, 0, 0, .45);
+    box-shadow: inset 0 1px 0 rgba(255, 220, 180, .08);
+}
+
+[data-skin="skeuomorphism"] #tabs button {
+    margin-top: 6px;
+    padding: 8px 14px 9px;
+    border: 0;
+    border-radius: 6px 6px 0 0;
+    color: var(--tx);
+}
+
+[data-skin="skeuomorphism"] #tabs button[aria-pressed=true] {
+    background: linear-gradient(180deg, #f6ead0, #e3cfa6);
+    color: #3a2a14;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .6);
+    box-shadow: 0 -1px 3px rgba(0, 0, 0, .35);
+}
+
+[data-skin="skeuomorphism"][data-theme="light"] #tabs {
+    background: rgba(0, 0, 0, .06);
+    border-top-color: #9aa0a8;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+
+[data-skin="skeuomorphism"][data-theme="light"] #tabs button[aria-pressed=true] {
+    background: linear-gradient(180deg, #ffffff, #f3ead6);
+    box-shadow: 0 -1px 3px rgba(60, 40, 15, .3);
+}
+
+/* ---- Botones: placas de bronce y cuero repujado --------------------------- */
+
+[data-skin="skeuomorphism"] .btn,
+[data-skin="skeuomorphism"] .pill[aria-pressed=true] {
+    color: var(--on-btn);
+    border-color: #6e4f17;
+    text-shadow: 0 1px 0 rgba(255, 245, 215, .55);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .6),
+        0 1px 2px rgba(0, 0, 0, .45);
+}
+
+[data-skin="skeuomorphism"] .btn:active {
+    background: linear-gradient(180deg, #c08f2c, #ddb253);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, .35);
+}
+
+[data-skin="skeuomorphism"] .ghost,
+[data-skin="skeuomorphism"] .seg,
+[data-skin="skeuomorphism"] .trend-tabs button,
+[data-skin="skeuomorphism"] .pill {
+    background: linear-gradient(180deg, #4b3627, #33241a);
+    border-color: #120b07;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 230, 190, .14),
+        0 1px 0 rgba(255, 230, 190, .06);
+}
+
+[data-skin="skeuomorphism"][data-theme="light"] .ghost,
+[data-skin="skeuomorphism"][data-theme="light"] .seg,
+[data-skin="skeuomorphism"][data-theme="light"] .trend-tabs button,
+[data-skin="skeuomorphism"][data-theme="light"] .pill {
+    background: linear-gradient(180deg, #ffffff, #ece4d3);
+    border-color: #b9a988;
+    box-shadow:
+        inset 0 1px 0 #fff,
+        0 1px 1px rgba(70, 45, 15, .2);
+}
+
+/* En el cartel, sobre la foto oscura, el botón secundario sigue claro sobre oscuro. */
+[data-skin="skeuomorphism"] .promo .ghost {
+    background: rgba(0, 0, 0, .35);
+    border-color: rgba(255, 245, 225, .5);
+    color: #fff;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, .5);
+    box-shadow: none;
+}
+
+/* La cuenta: una placa redonda de bronce. */
+[data-skin="skeuomorphism"] .acc-avatar {
+    background: var(--btn);
+    border-color: #6e4f17;
+    color: var(--on-btn);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .6),
+        0 1px 2px rgba(0, 0, 0, .45);
+}
+
+[data-skin="skeuomorphism"] .seg button[aria-pressed=true],
+[data-skin="skeuomorphism"] .seg button[aria-checked=true],
+[data-skin="skeuomorphism"] .trend-tabs button[aria-selected="true"] {
+    background: var(--btn);
+    text-shadow: 0 1px 0 rgba(255, 245, 215, .55);
+}
+
+/* ---- Campos: hundidos en el material ---------------------------------------- */
+
+[data-skin="skeuomorphism"] input,
+[data-skin="skeuomorphism"] select,
+[data-skin="skeuomorphism"] textarea {
+    border-color: #0b0705;
+    text-shadow: none;
+    box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, .55),
+        0 1px 0 rgba(255, 230, 190, .08);
+}
+
+[data-skin="skeuomorphism"][data-theme="light"] input,
+[data-skin="skeuomorphism"][data-theme="light"] select,
+[data-skin="skeuomorphism"][data-theme="light"] textarea {
+    border-color: #b9a988;
+    box-shadow:
+        inset 0 2px 3px rgba(70, 45, 15, .2),
+        0 1px 0 rgba(255, 255, 255, .8);
+}
+
+/* ---- Cartas enfundadas: plástico con brillo -------------------------------- */
+
+[data-skin="skeuomorphism"] .card-tile {
+    background:
+        linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, .1) 38%, transparent 46%),
+        rgba(255, 245, 225, .06);
+    border: 1px solid rgba(255, 245, 225, .28);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .18),
+        0 3px 8px rgba(0, 0, 0, .45);
+}
+
+[data-skin="skeuomorphism"][data-theme="light"] .card-tile {
+    background:
+        linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, .55) 38%, transparent 46%),
+        rgba(255, 255, 255, .55);
+    border-color: rgba(120, 90, 50, .35);
+    box-shadow:
+        inset 0 1px 0 #fff,
+        0 3px 8px rgba(70, 45, 15, .3);
+}
+
+/* ---- El banner y la portada --------------------------------------------------- */
+
+/* Un cartel con marco de bronce sobre fieltro oscuro. */
+[data-skin="skeuomorphism"] .promo {
+    border: 0;
+    background: var(--grain), #123826;
+    box-shadow:
+        0 0 0 1px #5a3f10,
+        0 0 0 4px #d7aa4b,
+        0 0 0 5px #5a3f10,
+        0 14px 30px rgba(0, 0, 0, .55);
+}
+
+[data-skin="skeuomorphism"] .promo-slide {
+    background:
+        radial-gradient(520px 260px at 85% 20%, rgba(255, 220, 150, .18), transparent 70%),
+        var(--grain),
+        #173f2d;
+}
+
+[data-skin="skeuomorphism"] .hero2 h1 b,
+[data-skin="skeuomorphism"] .portal-hero h1 b {
+    color: var(--ac);
+}
+
+/* Las cajas de cada juego: estuches de cuero con una franja de su color. */
+[data-skin="skeuomorphism"] .portal-game {
+    border-top: 6px solid var(--g1);
+}
+
+[data-skin="skeuomorphism"] a.portal-game:hover,
+[data-skin="skeuomorphism"] a.portal-game:focus-visible {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 230, 190, .12),
+        0 16px 30px rgba(0, 0, 0, .55);
+}
+
+/* ---- Ventanas, menús y avisos ------------------------------------------------- */
+
+[data-skin="skeuomorphism"] .suggest,
+[data-skin="skeuomorphism"] .acc-menu,
+[data-skin="skeuomorphism"] .lang-list {
+    border-color: #0f0906;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 230, 190, .1),
+        0 18px 40px rgba(0, 0, 0, .6);
+}
+
+[data-skin="skeuomorphism"][data-theme="light"] .suggest,
+[data-skin="skeuomorphism"][data-theme="light"] .acc-menu,
+[data-skin="skeuomorphism"][data-theme="light"] .lang-list {
+    border-color: #d8c9a8;
+    box-shadow: 0 16px 34px rgba(70, 45, 15, .3);
+}
+
+/* Las notas: papel claro con letra oscura en los dos modos. */
+[data-skin="skeuomorphism"] .tip,
+[data-skin="skeuomorphism"] .toast {
+    color: #2d2418;
+    text-shadow: none;
+    border-color: #c9b78f;
+}
+
+[data-skin="skeuomorphism"] .site-footer {
+    text-shadow: none;
+}
+
+/* En el teléfono, el logo con letra de imprenta ocupa más: un poco más chico. */
+@media (max-width: 760px) {
+    [data-skin="skeuomorphism"] .logo {
+        font-size: 16px;
+        padding: 4px 0;
+    }
+}
