@@ -399,7 +399,7 @@ function creditHtml(image) {
 }
 
 // Finishes a printing is sold in (Scryfall, TCGdex), in words.
-const FINISHES = {
+export const FINISHES = {
     nonfoil: "Normal",
     foil: "Foil",
     etched: "Foil grabado",
@@ -408,7 +408,8 @@ const FINISHES = {
     reverse: "Reverso holo",
     firstEdition: "1.ª edición"
 };
-const finishesText = (printing) => (printing.finishes || []).map((finish) => t(FINISHES[finish] || finish)).join(", ");
+export const finishName = (finish) => t(FINISHES[finish] || finish);
+const finishesText = (printing) => (printing.finishes || []).map(finishName).join(", ");
 
 // Yu-Gi-Oh!'s banlist has its equivalent in the other games: Magic's banned and
 // restricted list, format by format, and Pokémon's Standard and Expanded, which

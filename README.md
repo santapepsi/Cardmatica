@@ -10,7 +10,8 @@ La fuente principal es **YGOPRODeck API v7**. La API, persistencia, normalizaci�
 procedencia, reconciliación, trabajos y vistas reutilizan la arquitectura existente. Las
 pruebas automatizadas usan fixtures sintéticas y HTTP simulado. Las
 funcionalidades comerciales originales se conservan y están identificadas como
-demostración. No existe todavía un backend de vendedores, precios ni pedidos.
+demostración. Los vendedores reales ya publican su stock («Mi stock», abajo); todavía
+no existen los pedidos ni los pagos.
 Los UUID del catálogo no se mezclan con los índices del carrito original.
 
 Se cargó una muestra real desde YGOPRODeck: **5 cartas, 164 impresiones, 103 sets,
@@ -356,6 +357,14 @@ también obtiene su estado sin repetir la importación. En una lista marcada com
 una carta que no figura queda como permitida; en una incompleta, como «sin estado
 verificado». Para una lista nueva: copiar un JSON existente, actualizar fecha, fuente y
 nombres, y volver a ejecutar el comando. La importación es idempotente.
+
+**Mi stock.** Una cuenta cuyo perfil dice «Vendedor» (o «Comprador y vendedor») pone
+cartas a la venta desde el menú de la cuenta: busca la carta, elige impresión, acabado,
+estado, idioma, unidades y precio en su moneda, y después cambia unidades y precio o la
+quita. Los compradores ven esas ofertas debajo de cada carta, y la tienda en
+«Vendedores», encima de las de demostración, con el precio en su moneda
+(`/api/v1/listings`, `backend/app/services/listings.py`). No se ven las ofertas de una
+cuenta bloqueada ni las de quien deja de vender. Comprarlas llega con los pedidos.
 
 **Historial de precios.** Se construye solo con ventas completadas en Cardmática
 (tabla `price_observations`); nunca con guías de precios externas. Mientras no exista el

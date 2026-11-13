@@ -42,6 +42,8 @@ import { installHeaderScroll } from "./header-scroll.js";
 import { cardMeta, scopeMeta, tabMeta } from "./page-meta.js";
 import { priceChartHtml, priceSummary } from "./price-chart.js";
 import { installProfile, renderProfile } from "./profile.js";
+import { fillCardOffers, installMarket } from "./market.js";
+import { installStock, renderStock } from "./stock.js";
 import { rarityOptionsHtml, rarityParams } from "./rarities.js";
 import { installSearchSuggest } from "./search-suggest.js";
 import { readJson, writeJson } from "./storage.js";
@@ -92,7 +94,8 @@ const localPanels = {
     Carrito: "cartv",
     Acceso: "authv",
     Seguridad: "secv",
-    Admin: "admv"
+    Admin: "admv",
+    Stock: "stockv"
 };
 const renderLocal = {
     Deseados: renderWantlists,
@@ -100,7 +103,8 @@ const renderLocal = {
     Carrito: renderCart,
     Acceso: renderAuth,
     Seguridad: renderSecurity,
-    Admin: renderAdmin
+    Admin: renderAdmin,
+    Stock: renderStock
 };
 const isLocal = () => window.tab in localPanels;
 const isCatalog = () => !isCommerce() && !isLocal() && !isPortal() && window.tab !== "Inicio";
@@ -412,6 +416,7 @@ function renderDetail() {
         market: window.market
     });
     renderChart();
+    fillCardOffers(detail.id, selectedPrinting);
 }
 
 function renderChart() {
@@ -1003,12 +1008,14 @@ for (const name of ["openDemoCard", "openSeller", "openProduct", "showCart"]) {
     };
 }
 window.TAB_LABELS.Productos = "Productos (demo)";
-window.TAB_LABELS.Vendedores = "Vendedores (demo)";
+// Real sellers come first, then the demo stores (market.js).
+window.TAB_LABELS.Vendedores = "Vendedores";
 // The cart page and the profile have no tab of their own: they open from the
 // cart popup and from the account menu (account-menu.js).
 if (!window.TABS.includes("Deseados")) window.TABS.push("Deseados");
 window.TAB_LABELS.Deseados = "Lista de deseados";
 window.TAB_LABELS.Perfil = "Perfil";
+window.TAB_LABELS.Stock = "Mi stock";
 // The market last chosen in this game (frontend/demo/store.js keeps one per game).
 window.market = window.savedMarket(window.game) || gameInfo().markets[0].code;
 // "Vista del catálogo" in Personalización.
@@ -1028,6 +1035,8 @@ installAuth({
     }
 });
 installAccountMenu();
+installMarket();
+installStock({ panel: () => (window.tab === "Stock" ? element("stockv") : null) });
 installLanguageMenu();
 installAdmin();
 

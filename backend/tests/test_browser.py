@@ -1165,3 +1165,53 @@ def test_moderator_and_admin_panels(live_server, browser_page, factory):
     expect(page.locator("#admin-record")).to_contain_text("Borró la cuenta")
     expect(page.locator("#admin-record")).not_to_contain_text(people["userbuyer"]["email"])
     assert not errors
+
+
+def test_a_seller_puts_a_card_on_sale_and_buyers_find_it(live_server, browser_page, factory):
+    from app.services import test_accounts
+
+    with factory.begin() as session:
+        people = {
+            row["role"] + row["type"]: row for row in test_accounts.create(session, "example.com")
+        }
+    seller = people["userseller"]
+    page = browser_page
+    errors = []
+    page.on("pageerror", lambda error: errors.append(str(error)))
+    page.goto(f"{live_server}/yugioh?tab=Acceso")
+    page.locator("#auth-login input[type=email]").fill(seller["email"])
+    page.locator("#auth-login input[type=password]").fill(seller["password"])
+    page.locator("#auth-login button[type=submit]").click()
+    expect(page.locator("#ts")).to_contain_text("Hola,")
+    page.locator("#account-button").click()
+    page.locator('#account-menu [data-go="Stock"]').click()
+
+    stock = page.locator("#stockv")
+    expect(stock).to_contain_text("Todavía no tienes cartas a la venta.")
+    page.locator("#st-q").fill("Synthetic")
+    page.locator("[data-st-card]", has_text="Synthetic Test Dragon").click()
+    expect(page.locator("#st-printing")).to_contain_text("TST-EN001")
+    page.locator("#st-condition").select_option("EX")
+    page.locator("#st-quantity").fill("2")
+    page.locator("#st-price").fill("4.50")
+    page.locator("#st-currency").select_option("EUR")
+    page.locator("#st-form button[type=submit]").click()
+    mine = page.locator("#st-mine tbody tr")
+    expect(mine).to_have_count(1)
+    expect(mine).to_contain_text("Synthetic Test Dragon")
+    # Fewer copies left: saved from the table.
+    mine.locator("[data-st-quantity]").fill("1")
+    mine.locator("[data-st-save]").click()
+    expect(page.locator("#st-count")).to_contain_text("1 unidad")
+
+    # A buyer finds the store among the sellers, and the offer under the card.
+    page.locator('[data-g="Vendedores"]').click()
+    store = page.locator("#vl .real-seller")
+    expect(store).to_contain_text("Tienda de prueba")
+    store.click()
+    expect(page.locator("#mb")).to_contain_text("TST-EN001")
+    page.locator("#mb [data-catalog-card]").click()
+    offers = page.locator("#mb .cd-offers tbody")
+    expect(offers).to_contain_text("Tienda de prueba")
+    expect(offers).to_contain_text("4,50")
+    assert not errors
