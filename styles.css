@@ -3652,3 +3652,111 @@ button.acc-avatar:hover,
 .pd-photo {
     margin-bottom: 12px;
 }
+
+/* Mi stock (frontend/js/stock.js) y las ofertas reales (frontend/js/market.js) */
+#stockv > .pnl + .pnl,
+#stockv > div + .pnl {
+    margin-top: 12px;
+}
+
+#stockv form > b,
+#stockv .pnl > b {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.st-search {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--mu);
+}
+
+.st-results {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.st-chosen {
+    margin: 0 0 10px;
+}
+
+/* Precio y moneda en una fila. */
+.st-price {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.st-price input {
+    flex: 1;
+    min-width: 0;
+}
+
+.st-edit {
+    width: 6.5em;
+    text-align: right;
+}
+
+.st-actions {
+    white-space: nowrap;
+}
+
+.real-tag {
+    color: var(--good);
+    font-weight: 600;
+}
+
+@media (max-width: 640px) {
+    .st-actions {
+        white-space: normal;
+    }
+
+    .st-edit {
+        width: 5em;
+    }
+}
+
+/* En el teléfono, cada artículo en venta es una ficha, como las cuentas del panel. */
+@media (max-width: 640px) {
+    #st-mine thead {
+        display: none;
+    }
+
+    #st-mine table,
+    #st-mine tbody {
+        display: block;
+    }
+
+    #st-mine tr {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--bd);
+    }
+
+    #st-mine td {
+        padding: 0;
+        border: 0;
+        text-align: left;
+    }
+
+    #st-mine td:first-child,
+    #st-mine td:nth-child(2),
+    #st-mine td:last-child {
+        grid-column: 1 / -1;
+    }
+
+    #st-mine .st-price {
+        justify-content: flex-start;
+    }
+
+    #st-mine .st-edit {
+        width: 100%;
+    }
+}

@@ -51,6 +51,8 @@ class UserView(BaseModel):
     role: str
     email_verified: bool
     created_at: datetime
+    # The profile says seller: the account may put cards on sale ("Mi stock").
+    sells: bool = False
 
 
 class SessionView(BaseModel):

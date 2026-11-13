@@ -28,7 +28,7 @@ from app.schemas.accounts import (
     WantlistItemData,
     WantlistsData,
 )
-from app.services import card_views
+from app.services import card_views, listings
 from app.services.accounts import AccountError, as_aware
 from app.services.rarities import canonical
 
@@ -209,6 +209,10 @@ def export(session: Session, user: User) -> dict:
         "preferences": data.preferences.model_dump(),
         "wantlists": wantlists(session, user).model_dump(mode="json"),
         "viewed_cards": [str(card_id) for card_id in card_views.recent_ids(session, user)],
+        "listings": [
+            listing.model_dump(mode="json", exclude={"seller"})
+            for listing in listings.mine(session, user)
+        ],
         "sessions": [
             {
                 "started_at": _iso(row.created_at),
@@ -223,7 +227,7 @@ def export(session: Session, user: User) -> dict:
 
 def delete_account(session: Session, user: User) -> None:
     """Removes the account and everything tied to it: profile, preferences,
-    wantlists, sessions and email links (ON DELETE CASCADE in the database).
+    wantlists, stock on sale, sessions and email links (ON DELETE CASCADE).
 
     The staff's record keeps what was done, but no longer whose email it was."""
     gone = f"Cuenta borrada ({str(user.id)[:8]})"

@@ -99,7 +99,7 @@ export function renderProfile(container) {
     );
     const where = t(
         currentUser()
-            ? "El perfil se guarda en tu cuenta. Un perfil de vendedor todavía no publica una tienda."
+            ? "El perfil se guarda en tu cuenta. Como vendedor, pones cartas a la venta desde «Mi stock»."
             : "Sin sesión iniciada, el perfil se guarda solo en este navegador. Inicia sesión para guardarlo en tu cuenta."
     );
     const lists = t(listCount() === 1 ? "{count} lista" : "{count} listas", { count: listCount() });
