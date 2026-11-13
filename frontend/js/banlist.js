@@ -33,13 +33,16 @@ export function statusFor(card, market) {
     return (card.banlist_status || []).find((item) => item.format === market);
 }
 
-export function badgeHtml(status) {
+// The status mark; hovering (or focusing) it says the status in a small box.
+// "small" is the one under a card's type line, in lists and tiles.
+export function badgeHtml(status, { small = false } = {}) {
     if (!status) return "";
     const info = STATUS[status.status] || STATUS.unknown;
     const limit = copies(status) ? ` (${copies(status)})` : "";
     const list = t("lista del {date}", { date: formatDate(status.effective_date) });
-    const title = h(`${t("{status} en {format}", { status: t(info.label), format: status.format })}${limit} · ${list}`);
-    return `<span class="bn bn-${info.tone}" role="img" aria-label="${title}" title="${title}">${info.mark}</span>`;
+    const tip = h(`${t("{status} en {format}", { status: t(info.label), format: status.format })}${limit} · ${list}`);
+    const size = small ? " bn-s" : "";
+    return `<span class="bn bn-${info.tone}${size}" role="img" tabindex="0" aria-label="${tip}" data-tip="${tip}">${info.mark}</span>`;
 }
 
 const sourceLink = (url, name) =>

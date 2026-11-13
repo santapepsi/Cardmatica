@@ -10,6 +10,7 @@ import { escapeHtml, html } from "./html.js";
 import { t } from "./lang.js";
 import { request } from "./session-api.js";
 import { finishName } from "./catalog-view.js";
+import { rarityBadge } from "./rarities.js";
 
 const h = escapeHtml;
 export const LISTINGS = "/api/v1/listings";
@@ -49,6 +50,13 @@ export const languageText = (code) => (window.DEMO.languages[code] ? t(window.DE
 // "Foil", "Reverse"...: the finish, when the printing has more than one.
 export const finishText = (finish) => (finish ? ` · ${h(finishName(finish))}` : "");
 
+// The seller's photo of the copy: small here, whole in a new tab.
+export function photoThumb(listing) {
+    if (!listing.photo_url) return "";
+    const label = t("Foto del vendedor");
+    return `<a class="photo-thumb" href="${h(listing.photo_url)}" target="_blank" rel="noopener" title="${label}"><img src="${h(listing.photo_url)}" alt="${label}" width="34" height="46" loading="lazy" decoding="async"></a>`;
+}
+
 // A flag only for a seller who said their country (the demo ones always have).
 const flagHtml = (country) => (country && window.DEMO.flags[country] ? window.flag(country) : "");
 
@@ -63,9 +71,14 @@ function cardOfferRow(listing) {
         <tr>
             <td>${sellerHtml(listing.seller)}<small>${t("Desde {year}", { year: listing.seller.since })}</small></td>
             <td>
-                <b>${h(listing.code)}</b> ${conditionHtml(listing.condition)} ${languageText(listing.language)}${finishText(listing.finish)}
-                <small>${h(listing.set_name)} · ${h(listing.rarity)}</small>
-                ${comment}
+                <div class="st-card">
+                    ${photoThumb(listing)}
+                    <div>
+                        <b>${h(listing.code)}</b> ${conditionHtml(listing.condition)} ${languageText(listing.language)}${finishText(listing.finish)}
+                        <small>${rarityBadge(listing, listing.game)} ${h(listing.set_name)}</small>
+                        ${comment}
+                    </div>
+                </div>
             </td>
             <td class="num price">${priceHtml(listing)}<small>${t("{count} disp.", { count: listing.quantity })}</small></td>
         </tr>`;
@@ -137,10 +150,15 @@ function inventoryRow(listing) {
     return html`
         <tr>
             <td>
-                <button class="lk" data-catalog-card="${h(listing.card_id)}">${h(listing.card_name)}</button>
-                ${listing.comment ? `<small>${h(listing.comment)}</small>` : ""}
+                <div class="st-card">
+                    ${photoThumb(listing)}
+                    <div>
+                        <button class="lk" data-catalog-card="${h(listing.card_id)}">${h(listing.card_name)}</button>
+                        ${listing.comment ? `<small>${h(listing.comment)}</small>` : ""}
+                    </div>
+                </div>
             </td>
-            <td><b>${h(listing.code)}</b><small>${h(listing.set_name)} · ${h(listing.rarity)}</small></td>
+            <td><b>${h(listing.code)}</b><small>${rarityBadge(listing, listing.game)} ${h(listing.set_name)}</small></td>
             <td>${conditionHtml(listing.condition)}</td>
             <td>${languageText(listing.language)}${finishText(listing.finish)}</td>
             <td class="num">${listing.quantity}</td>

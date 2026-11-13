@@ -140,3 +140,72 @@ def test_the_stock_goes_with_the_account(client, printing_id, factory):
     client.post("/api/v1/listings", json=offer(printing_id))
     exported = client.get("/api/v1/account/export").json()
     assert [row["code"] for row in exported["listings"]] == ["TST-001"]
+
+
+def photo_url(color="red", size=(900, 1300)):
+    import base64
+    import io
+
+    from PIL import Image
+
+    output = io.BytesIO()
+    Image.new("RGB", size, color).save(output, "JPEG")
+    return "data:image/jpeg;base64," + base64.b64encode(output.getvalue()).decode()
+
+
+def test_dear_cards_need_a_photo_of_the_copy(client, printing_id, factory):
+    sign_in(client, "tienda@example.com")
+    # 10 USD exactly is fine without one; 11 USD, or 500 pesos uruguayos, are not.
+    assert (
+        client.post(
+            "/api/v1/listings", json=offer(printing_id, price="10", currency="USD")
+        ).status_code
+        == 201
+    )
+    for dear in ({"price": "11", "currency": "USD"}, {"price": "500", "currency": "UYU"}):
+        refused = client.post("/api/v1/listings", json=offer(printing_id, **dear))
+        assert refused.status_code == 400 and "foto" in refused.json()["error"]["message"]
+
+    added = client.post(
+        "/api/v1/listings", json=offer(printing_id, price="11", currency="USD", photo=photo_url())
+    )
+    assert added.status_code == 201
+    listing = added.json()
+    shown = client.get(listing["photo_url"])
+    assert shown.status_code == 200 and shown.headers["content-type"] == "image/webp"
+    import io
+
+    from PIL import Image
+
+    with Image.open(io.BytesIO(shown.content)) as kept:
+        assert max(kept.size) == 1200 and not kept.getexif()
+
+    # Raising a cheap copy above the line asks for its photo too.
+    cheap = client.get("/api/v1/listings/mine").json()[0]
+    assert cheap["photo_url"] is None
+    assert client.patch(f"/api/v1/listings/{cheap['id']}", json={"price": "20"}).status_code == 400
+    changed = client.patch(
+        f"/api/v1/listings/{cheap['id']}", json={"price": "20", "photo": photo_url("blue")}
+    )
+    assert changed.status_code == 200 and changed.json()["photo_url"]
+
+    # Not a picture: refused.
+    broken = "data:image/png;base64,bm90IGFuIGltYWdl"
+    assert client.post("/api/v1/listings", json=offer(printing_id, photo=broken)).status_code == 400
+
+    # Taking the copy off sale takes its photo too.
+    assert client.delete(f"/api/v1/listings/{listing['id']}").status_code == 204
+    assert client.get(listing["photo_url"]).status_code == 404
+
+
+def test_the_rates_are_the_storefronts(settings):
+    """The photo rule converts with the same rates the page shows prices with."""
+    import re
+    from decimal import Decimal
+
+    from app.core.config import ROOT
+    from app.core.currencies import PER_EURO
+
+    data = (ROOT / "frontend/demo/data.js").read_text(encoding="utf-8")
+    shown = dict(re.findall(r'code: "([A-Z]{3})"[^}]*perEuro: ([\d.]+)', data))
+    assert {code: Decimal(rate) for code, rate in shown.items()} == PER_EURO

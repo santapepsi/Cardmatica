@@ -9,13 +9,19 @@ import { request } from "./session-api.js";
 import { currentUser } from "./auth.js";
 import { currentProfile } from "./profile.js";
 import { finishName } from "./catalog-view.js";
-import { LISTINGS, conditionHtml, finishText, forgetOffers, languageText, priceHtml } from "./market.js";
+import { rarityBadge } from "./rarities.js";
+import { LISTINGS, conditionHtml, finishText, forgetOffers, languageText, photoThumb, priceHtml } from "./market.js";
 
 const h = escapeHtml;
 const LANGUAGES = ["ES", "EN", "PT", "FR", "DE", "IT", "JP", "KO", "ZH"];
 // The catalogue says "ja"; a seller says "JP", as Cardmarket does.
 const FROM_CATALOGUE = { ja: "JP" };
 const SEARCH_RESULTS = 8;
+// Above this, in US dollars, a copy needs the seller's photo
+// (PHOTO_FROM_USD in backend/app/services/listings.py).
+const PHOTO_FROM_USD = 10;
+// Photos are shrunk before sending: enough to see the copy, light to upload.
+const PHOTO_SIDE = 1600;
 const SEARCH_DELAY_MS = 250;
 
 // The card being put on sale and its printings, while the form is open.
@@ -69,9 +75,46 @@ function cardFieldsHtml() {
                 <span class="st-price"><input id="st-price" type="number" min="0.01" step="0.01" inputmode="decimal" required><select id="st-currency" aria-label="${t("Moneda")}">${currencyOptions()}</select></span>
             </label>
             <label class="full">${t("Comentario (opcional)")}<input id="st-comment" maxlength="200" placeholder="${t("Ej.: firmada, con funda, primera edición")}"></label>
+            <label class="full">${t("Foto de la carta")}
+                <input id="st-photo" type="file" accept="image/png,image/jpeg,image/webp">
+                <small id="st-photo-note">${photoNote(window.currency, 0)}</small>
+            </label>
+            <img id="st-photo-preview" class="st-photo-preview" alt="${t("Tu foto de la carta")}" hidden>
         </div>
         <p><button class="btn" type="submit">${t("Poner en venta")}</button> <button class="ghost" type="button" data-st-cancel>${t("Elegir otra carta")}</button></p>`;
 }
+
+// The rule in the seller's currency: "10 USD" is "≈ 460 UYU" in Uruguay.
+function dollarsIn(currency) {
+    const rate = (code) => window.CURRENCIES.find((item) => item.code === code)?.perEuro || 1;
+    return (PHOTO_FROM_USD / rate("USD")) * rate(currency);
+}
+
+const needsPhoto = (price, currency) => Number(price) > dollarsIn(currency);
+
+function photoNote(currency, price) {
+    const limit = dollarsIn(currency);
+    const decimals = window.CURRENCIES.find((item) => item.code === currency)?.decimals ?? 2;
+    const amount = `${limit.toLocaleString(window.I18N.lang, { maximumFractionDigits: decimals })} ${currency}`;
+    return needsPhoto(price, currency)
+        ? t("Obligatoria: la carta vale más de {amount} (10 USD).", { amount })
+        : t("Opcional hasta {amount} (10 USD); obligatoria por encima.", { amount });
+}
+
+// A photo from the phone or the computer, shrunk to JPEG for sending.
+async function photoData(file) {
+    const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+    const scale = Math.min(1, PHOTO_SIDE / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    return canvas.toDataURL("image/jpeg", 0.85);
+}
+
+// The photo chosen in the form, ready to send.
+let formPhoto = null;
 
 function formHtml() {
     const picked = chosen
@@ -95,8 +138,14 @@ function rowHtml(listing) {
     return html`
         <tr>
             <td>
-                <button class="lk" data-catalog-card="${h(listing.card_id)}">${h(listing.card_name)}</button>
-                <small>${h(listing.code)} · ${h(listing.rarity)}${listing.comment ? ` · ${h(listing.comment)}` : ""}</small>
+                <div class="st-card">
+                    ${photoThumb(listing)}
+                    <div>
+                        <button class="lk" data-catalog-card="${h(listing.card_id)}">${h(listing.card_name)}</button>
+                        <small>${rarityBadge(listing, listing.game)} ${h(listing.code)}${listing.comment ? ` · ${h(listing.comment)}` : ""}</small>
+                        <label class="lk st-photo-change">${listing.photo_url ? t("Cambiar foto") : t("Añadir foto")}<input type="file" accept="image/png,image/jpeg,image/webp" data-st-photo="${id}" hidden></label>
+                    </div>
+                </div>
             </td>
             <td>${conditionHtml(listing.condition)} ${languageText(listing.language)}${finishText(listing.finish)}</td>
             <td class="num"><input class="st-edit" type="number" min="1" max="9999" step="1" value="${listing.quantity}" data-st-quantity="${id}" aria-label="${t("Unidades")}"></td>
@@ -241,10 +290,13 @@ async function submit(form) {
         quantity: Number(value("st-quantity")),
         price: value("st-price"),
         currency: value("st-currency"),
-        comment: value("st-comment") || null
+        comment: value("st-comment") || null,
+        photo: formPhoto
     };
     if (!(body.quantity >= 1)) return showError(t("Indica cuántas unidades vendes."));
     if (!(Number(body.price) > 0)) return showError(t("Indica el precio por unidad."));
+    if (!body.photo && needsPhoto(body.price, body.currency))
+        return showError(t("Esta carta vale más de 10 USD: añade una foto de la copia que vendes."));
     const button = form.querySelector("button[type=submit]");
     button.disabled = true;
     try {
@@ -255,6 +307,7 @@ async function submit(form) {
         document.getElementById("st-quantity").value = 1;
         document.getElementById("st-price").value = "";
         document.getElementById("st-comment").value = "";
+        clearFormPhoto();
         showError("");
         loadMine();
     } catch (error) {
@@ -301,15 +354,59 @@ async function remove(button) {
     }
 }
 
+function clearFormPhoto() {
+    formPhoto = null;
+    document.getElementById("st-photo").value = "";
+    document.getElementById("st-photo-preview").hidden = true;
+}
+
+async function pickFormPhoto(input) {
+    const file = input.files[0];
+    if (!file) return clearFormPhoto();
+    try {
+        formPhoto = await photoData(file);
+        const preview = document.getElementById("st-photo-preview");
+        preview.src = formPhoto;
+        preview.hidden = false;
+        showError("");
+    } catch {
+        clearFormPhoto();
+        showError(t("No se pudo leer la foto"));
+    }
+}
+
+async function replacePhoto(input) {
+    const file = input.files[0];
+    if (!file) return;
+    try {
+        const photo = await photoData(file);
+        await request(`${LISTINGS}/${input.dataset.stPhoto}`, { method: "PATCH", body: { photo } });
+        forgetOffers();
+        window.toast?.(t("Foto guardada"));
+        loadMine();
+    } catch (error) {
+        window.toast?.(error.message || t("No se pudo leer la foto"));
+    }
+}
+
+function updatePhotoNote() {
+    const note = document.getElementById("st-photo-note");
+    if (note) note.textContent = photoNote(document.getElementById("st-currency").value, document.getElementById("st-price").value);
+}
+
 export function installStock({ panel: find }) {
     panel = find;
     document.addEventListener("input", (event) => {
+        if (event.target.id === "st-price") updatePhotoNote();
         if (event.target.id !== "st-q") return;
         clearTimeout(searchTimer);
         const text = event.target.value.trim();
         searchTimer = setTimeout(() => search(text), SEARCH_DELAY_MS);
     });
     document.addEventListener("change", (event) => {
+        if (event.target.id === "st-currency") updatePhotoNote();
+        if (event.target.id === "st-photo") pickFormPhoto(event.target);
+        if (event.target.dataset?.stPhoto) replacePhoto(event.target);
         if (event.target.id !== "st-printing") return;
         const printing = chosen?.printings.find((item) => item.id === event.target.value);
         const finishes = printing?.finishes || [];
@@ -330,6 +427,7 @@ export function installStock({ panel: find }) {
         else if (stRemove) remove(button);
         else {
             chosen = null;
+            formPhoto = null;
             redrawForm();
         }
     });

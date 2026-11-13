@@ -1793,8 +1793,11 @@ button:disabled {
     filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .45));
 }
 
-.rarity-stamp .rr {
-    backdrop-filter: blur(6px);
+/* Sobre la imagen, la cajita se abre hacia adentro. */
+.rarity-stamp .rr-icon[data-tip]:hover::after,
+.rarity-stamp .rr-icon[data-tip]:focus-visible::after {
+    left: auto;
+    right: calc(100% + 8px);
 }
 
 .img-warn.inline {
@@ -3759,4 +3762,127 @@ button.acc-avatar:hover,
     #st-mine .st-edit {
         width: 100%;
     }
+}
+
+/* La foto de la copia: miniatura al lado del nombre, entera en otra pestaña. */
+.st-card {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.photo-thumb {
+    flex: none;
+    display: block;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--bd);
+}
+
+.photo-thumb img {
+    display: block;
+    width: 34px;
+    height: 46px;
+    object-fit: cover;
+}
+
+.st-photo-preview {
+    grid-column: 1 / -1;
+    max-width: 160px;
+    max-height: 220px;
+    border-radius: 6px;
+    border: 1px solid var(--bd);
+    object-fit: contain;
+}
+
+.st-photo-change {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* Rareza como ícono (frontend/js/rarities.js): los del binder y, para el resto,
+   uno dibujado igual: dos tonos en diagonal y letras blancas. */
+.rr-icon {
+    position: relative;
+    display: inline-block;
+    height: 22px;
+    vertical-align: middle;
+    line-height: 0;
+    border-radius: 3px;
+}
+
+.rr-icon img,
+.rr-icon svg {
+    height: 100%;
+    width: auto;
+}
+
+.rr-icon svg {
+    aspect-ratio: 80 / 54;
+}
+
+.rr-icon text {
+    fill: #fff;
+    /* Legible también sobre la mitad clara (oro, plata, blanco). */
+    paint-order: stroke;
+    stroke: rgba(0, 0, 0, .3);
+    stroke-width: 3px;
+    font-family: Nunito, "Segoe UI", system-ui, sans-serif;
+    font-weight: 900;
+}
+
+.rarity-stamp .rr-icon {
+    height: 24px;
+}
+
+/* La marca de la banlist, chica, debajo del tipo de carta. */
+.ban-line {
+    display: block;
+    margin-top: 3px;
+    line-height: 0;
+}
+
+.bn.bn-s {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    font-size: 9px;
+    vertical-align: 0;
+}
+
+/* Cajita de texto al pasar el cursor (o enfocar con el teclado) sobre la
+   rareza o la marca de la banlist. Se abre al costado: así no la corta el
+   borde de una tabla con scroll. */
+.rr-icon[data-tip],
+.bn[data-tip] {
+    position: relative;
+    cursor: help;
+}
+
+.rr-icon[data-tip]:hover::after,
+.rr-icon[data-tip]:focus-visible::after,
+.bn[data-tip]:hover::after,
+.bn[data-tip]:focus-visible::after {
+    content: attr(data-tip);
+    position: absolute;
+    z-index: 30;
+    top: 50%;
+    left: calc(100% + 8px);
+    transform: translateY(-50%);
+    width: max-content;
+    max-width: 240px;
+    padding: 6px 9px;
+    border-radius: 7px;
+    background: var(--tip);
+    border: 1px solid var(--bd);
+    color: var(--tx);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.35;
+    text-align: left;
+    white-space: normal;
+    box-shadow: 0 8px 24px rgba(var(--shade), .45);
+    pointer-events: none;
 }
