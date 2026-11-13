@@ -777,8 +777,38 @@ def test_rarity_filter_grouped_by_family(live_server, browser_page):
     page.locator("#rar").select_option("Super Rare")
     page.locator("#list [data-catalog-card]").first.click()
     # The card opens on the printing of the rarity being looked for.
-    expect(page.locator(".card-detail .rr").first).to_have_text("Super Rare")
-    expect(page.locator(".card-detail .rr").first).to_have_attribute("data-tone", "super")
+    icon = page.locator(".card-detail .rr-icon").first
+    expect(icon).to_have_attribute("aria-label", "Super Rare")
+    # The binder's picture, and the rarity by name when hovering it.
+    expect(icon.locator("img")).to_have_attribute("src", "/frontend/assets/rarities/super-rare.png")
+    assert icon.get_attribute("data-tip").startswith("Super Rare · SR")
+
+
+def test_banlist_mark_sits_small_under_the_type_line(live_server, browser_page, factory):
+    with factory.begin() as session:
+        import_banlist(
+            session,
+            BanlistFile(
+                format="TCG",
+                effective_date=date(2026, 1, 1),
+                complete=True,
+                source_name="Synthetic test list",
+                source_url="https://example.com/synthetic-list",
+                retrieved_on=date(2026, 1, 2),
+                limited=["Synthetic Test Dragon"],
+            ),
+        )
+    page = browser_page
+    page.goto(f"{live_server}/?tab=Todas")
+    row = page.locator("#list [data-catalog-card]").first
+    expect(row).to_be_visible()
+    mark = row.locator(".nm-text .ban-line .bn-s")
+    expect(mark).to_be_visible()
+    box = mark.bounding_box()
+    meta = row.locator(".nm-text .meta").bounding_box()
+    assert box["y"] >= meta["y"] + meta["height"] - 1 and box["height"] <= 15
+    assert mark.get_attribute("data-tip").startswith("Limitada en TCG")
+    assert row.locator(".nm-text b .bn").count() == 0
 
 
 def test_shopping_wizard_plans_by_shipments_or_price(live_server, browser_page):
@@ -1167,6 +1197,16 @@ def test_moderator_and_admin_panels(live_server, browser_page, factory):
     assert not errors
 
 
+def synthetic_png():
+    import io
+
+    from PIL import Image
+
+    output = io.BytesIO()
+    Image.new("RGB", (300, 420), "teal").save(output, "PNG")
+    return output.getvalue()
+
+
 def test_a_seller_puts_a_card_on_sale_and_buyers_find_it(live_server, browser_page, factory):
     from app.services import test_accounts
 
@@ -1204,14 +1244,28 @@ def test_a_seller_puts_a_card_on_sale_and_buyers_find_it(live_server, browser_pa
     mine.locator("[data-st-save]").click()
     expect(page.locator("#st-count")).to_contain_text("1 unidad")
 
+    # Above 10 USD, the copy needs its photo.
+    page.locator("#st-price").fill("20")
+    expect(page.locator("#st-photo-note")).to_contain_text("Obligatoria")
+    page.locator("#st-form button[type=submit]").click()
+    expect(page.locator("#st-error")).to_contain_text("añade una foto")
+    page.locator("#st-photo").set_input_files(
+        files=[{"name": "copia.png", "mimeType": "image/png", "buffer": synthetic_png()}]
+    )
+    expect(page.locator("#st-photo-preview")).to_be_visible()
+    page.locator("#st-form button[type=submit]").click()
+    expect(mine).to_have_count(2)
+    expect(page.locator("#st-mine .photo-thumb img")).to_have_count(1)
+
     # A buyer finds the store among the sellers, and the offer under the card.
     page.locator('[data-g="Vendedores"]').click()
     store = page.locator("#vl .real-seller")
     expect(store).to_contain_text("Tienda de prueba")
     store.click()
     expect(page.locator("#mb")).to_contain_text("TST-EN001")
-    page.locator("#mb [data-catalog-card]").click()
+    page.locator("#mb [data-catalog-card]").first.click()
     offers = page.locator("#mb .cd-offers tbody")
     expect(offers).to_contain_text("Tienda de prueba")
     expect(offers).to_contain_text("4,50")
+    expect(offers.locator(".photo-thumb")).to_have_count(1)
     assert not errors

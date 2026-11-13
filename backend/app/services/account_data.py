@@ -231,6 +231,7 @@ def delete_account(session: Session, user: User) -> None:
 
     The staff's record keeps what was done, but no longer whose email it was."""
     gone = f"Cuenta borrada ({str(user.id)[:8]})"
+    listings.forget_photos(session, user)
     session.execute(update(StaffAction).where(StaffAction.target_id == user.id).values(target=gone))
     session.execute(update(StaffAction).where(StaffAction.actor_id == user.id).values(actor=gone))
     session.execute(delete(User).where(User.id == user.id))

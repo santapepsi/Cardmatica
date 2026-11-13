@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from app.api.dependencies import Current, SessionDep, csrf, same_origin
 from app.core.games import Game
 from app.schemas.listings import ListingChange, ListingInput, ListingView
-from app.services import listings
+from app.services import image_store, listings
 
 router = APIRouter(prefix="/api/v1/listings", tags=["Ventas"])
 changes = [Depends(same_origin), Depends(csrf)]
@@ -37,6 +37,18 @@ def _refused(error: Exception) -> HTTPException:
     return HTTPException(400, str(error))
 
 
+@router.get("/{listing_id}/photo")
+def photo(listing_id: UUID, session: SessionDep):
+    """The seller's photo of the copy on sale: public, like the offer."""
+    found = listings.photo(session, listing_id)
+    if found is None:
+        raise HTTPException(404, "Esta oferta no tiene foto")
+    name, content = found
+    # A new photo comes with a new ?v= in photo_url.
+    headers = {"Cache-Control": "public, max-age=86400"}
+    return Response(content, media_type=image_store.media_type(name), headers=headers)
+
+
 @router.post("", response_model=ListingView, status_code=201, dependencies=changes)
 def add(payload: ListingInput, found: Current, session: SessionDep):
     try:
@@ -51,7 +63,7 @@ def add(payload: ListingInput, found: Current, session: SessionDep):
 def change(listing_id: UUID, payload: ListingChange, found: Current, session: SessionDep):
     try:
         listing = listings.change(session, found[0], listing_id, payload)
-    except LookupError as error:
+    except (LookupError, listings.ListingError) as error:
         raise _refused(error) from error
     session.commit()
     return listing

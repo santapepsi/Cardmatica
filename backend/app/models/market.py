@@ -75,3 +75,6 @@ class Listing(Entity, Base):
     price: Mapped[Decimal] = mapped_column(Numeric(14, 2))
     currency: Mapped[str] = mapped_column(String(3))
     comment: Mapped[str | None] = mapped_column(String(200))
+    # The seller's own photo of the copy, by its name in the image store
+    # (app/services/image_store.py). Required above PHOTO_FROM_USD.
+    photo: Mapped[str | None] = mapped_column(String(300))
