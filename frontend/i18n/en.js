@@ -139,7 +139,6 @@ I18N.add({
     "Buscar en la lista": "Search the list",
     "Buscar en su inventario": "Search their inventory",
     "Buscar por carta, set o código": "Search by card, set or code",
-    "Buscar por correo o nombre": "Search by email or name",
     "Buscar por correo, nombre o tienda": "Search by email, name or store",
     "Básica": "Basic",
     "Básicas": "Basic",

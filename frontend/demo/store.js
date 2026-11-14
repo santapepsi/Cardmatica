@@ -386,9 +386,10 @@ function thumbnail(card, className) {
     return `<div class="${className}" style="background:${frameColor(card)}"><i>${icon}</i></div>`;
 }
 
+// The catalogue's rarity icons (frontend/js/rarities.js, shared by catalog.js,
+// which draws the first view, so it is always there).
 function rarityBadge(printing) {
-    const rarity = DEMO.rarities[printing.rarityKey];
-    return `<span class="rr" data-tone="${rarity.tone}">${rarity.name}</span>`;
+    return window.rarityIcon({ rarity: DEMO.rarities[printing.rarityKey].name }, game);
 }
 
 // "TCG", "OCG", "JP": the market of a card or product; a game with one market shows none.

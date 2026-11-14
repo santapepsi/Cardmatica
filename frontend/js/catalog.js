@@ -44,7 +44,7 @@ import { priceChartHtml, priceSummary } from "./price-chart.js";
 import { installProfile, renderProfile } from "./profile.js";
 import { fillCardOffers, installMarket } from "./market.js";
 import { installStock, renderStock } from "./stock.js";
-import { rarityOptionsHtml, rarityParams } from "./rarities.js";
+import { rarityBadge, rarityOptionsHtml, rarityParams } from "./rarities.js";
 import { installSearchSuggest } from "./search-suggest.js";
 import { readJson, writeJson } from "./storage.js";
 import { trendingHtml } from "./trending.js";
@@ -1035,6 +1035,8 @@ installAuth({
     }
 });
 installAccountMenu();
+// The demo store (a classic script) draws its rarities with the same icons.
+window.rarityIcon = rarityBadge;
 installMarket();
 installStock({ panel: () => (window.tab === "Stock" ? element("stockv") : null) });
 installLanguageMenu();

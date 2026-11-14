@@ -97,7 +97,7 @@ def offers(
     card_id: UUID | None = None,
     seller_id: UUID | None = None,
 ) -> list[ListingView]:
-    """What is on sale, cheapest first within each card."""
+    """What is on sale, by card and printing (the page sorts prices across currencies)."""
     query = _offers().where(User.blocked_at.is_(None), UserProfile.account_role.in_(SELLING))
     if game:
         query = query.where(Card.game == game)

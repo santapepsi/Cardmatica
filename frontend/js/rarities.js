@@ -37,27 +37,6 @@ const NOTES = {
     "Normal Rare": "Common con la frecuencia de una Rare (OCG)"
 };
 
-// Each step of the basic ladder has its colour; the other families one each.
-const BASIC_TONES = {
-    Rare: "rare",
-    "Super Rare": "super",
-    "Ultra Rare": "ultra",
-    "Secret Rare": "secret"
-};
-// Magic's set symbol colours: black, silver, gold and orange.
-const MAGIC_TONES = { Common: "common", Uncommon: "rare", Rare: "gold", "Mythic Rare": "mythic", Special: "special", Bonus: "special" };
-const POKEMON_TONES = { basic: { Rare: "super", "Holo Rare": "super", Uncommon: "rare" }, ultra: "ultra", illustration: "premium", secret: "secret", promo: "special" };
-
-function tone(name, family, game) {
-    if (game === "magic") return MAGIC_TONES[name] || "other";
-    if (game === "pokemon") {
-        const tones = POKEMON_TONES[family];
-        return typeof tones === "string" ? tones : tones?.[name] || (family === "basic" ? "common" : "other");
-    }
-    if (family === "basic") return BASIC_TONES[name] || "common";
-    return family in FAMILY_LABELS ? family : "other";
-}
-
 // ---- Rarity icons ------------------------------------------------------------
 // The binder's badges (frontend/assets/rarities, from santapepsi/binder): a
 // rounded box in two tones split on a diagonal, with white letters. Yu-Gi-Oh!
@@ -204,27 +183,30 @@ function drawnBadge(tag, dark, light) {
     // Narrower letters for longer tags, as in the pictures; never past the edges.
     const size = tag.length <= 2 ? 40 : tag.length === 3 ? 33 : 27;
     const fit = tag.length >= 4 ? ' textLength="70" lengthAdjust="spacingAndGlyphs"' : "";
-    return `<svg viewBox="0 0 80 54" aria-hidden="true"><rect width="80" height="54" rx="6.5" fill="${light}"/><path d="M6.5 0H49.6L24 54H6.5A6.5 6.5 0 0 1 0 47.5V6.5A6.5 6.5 0 0 1 6.5 0Z" fill="${dark}"/><text x="40" y="29" dominant-baseline="central" text-anchor="middle" font-size="${size}"${fit}>${escapeHtml(tag)}</text></svg>`;
+    return `<svg viewBox="0 0 80 54" aria-hidden="true"><rect width="80" height="54" rx="6.5" fill="${light}"/><path d="M6.5 0H49.6L24 54H6.5A6.5 6.5 0 0 1 0 47.5V6.5A6.5 6.5 0 0 1 6.5 0Z" fill="${dark}"/><text x="40" y="29" dominant-baseline="central" text-anchor="middle" font-size="${size}"${fit}>${h(tag)}</text></svg>`;
 }
 
-// printing: { rarity, rarity_code, rarity_family } as the API sends it; the
-// game is the one on screen unless said.
+function iconHtml(printing, known, game) {
+    const picture = game === "yugioh" && known && PICTURES[printing.rarity];
+    if (picture) return `<img src="${PICTURE_DIR}${picture}.png" alt="" width="80" height="54" decoding="async">`;
+    if (!known) return drawnBadge("?", ...GREY);
+    const [tag, dark, light] = DRAWN[game]?.[printing.rarity] || [letters(printing), ...GREY];
+    return drawnBadge(tag, dark, light);
+}
+
+// printing: { rarity, rarity_code, rarity_family } as the API sends it (the
+// demo store sends only the rarity); the game is the one on screen unless said.
 export function rarityBadge(printing, game = window.game) {
-    const known = printing?.rarity && printing.rarity !== "Unknown";
+    const known = Boolean(printing?.rarity) && printing.rarity !== "Unknown";
     const name = known ? printing.rarity : t("Sin documentar");
     const family = known ? printing.rarity_family : "other";
-    const note = game === "yugioh" ? NOTES[printing?.rarity] : "";
-    const tip = [name, ...[known && printing.rarity_code, note, familyLabel(family, game)].filter(Boolean).map((part) => t(part))].join(" · ");
-    const picture = (game || "yugioh") === "yugioh" && PICTURES[printing?.rarity];
-    let inner;
-    if (picture) inner = `<img src="${PICTURE_DIR}${picture}.png" alt="" width="80" height="54" decoding="async">`;
-    else {
-        const [tag, dark, light] = known
-            ? DRAWN[game]?.[printing.rarity] || [letters(printing), ...GREY]
-            : ["?", ...GREY];
-        inner = drawnBadge(tag, dark, light);
-    }
-    return `<span class="rr-icon" data-tone="${tone(printing?.rarity, family, game)}" role="img" tabindex="0" aria-label="${h(name)}" data-tip="${h(tip)}">${inner}</span>`;
+    const details = [
+        known && printing.rarity_code,
+        game === "yugioh" && NOTES[printing?.rarity],
+        family && familyLabel(family, game)
+    ];
+    const tip = [name, ...details.filter(Boolean).map((part) => t(part))].join(" · ");
+    return `<span class="rr-icon" role="img" tabindex="0" aria-label="${h(name)}" data-tip="${h(tip)}">${iconHtml(printing, known, game)}</span>`;
 }
 
 // A whole family is chosen with this prefix ("familia:gold").
