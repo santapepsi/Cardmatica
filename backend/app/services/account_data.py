@@ -24,6 +24,7 @@ from app.schemas.accounts import (
     Preferences,
     PriceAlert,
     ProfileData,
+    ProfileView,
     WantlistData,
     WantlistItemData,
     WantlistsData,
@@ -43,18 +44,18 @@ def _profile_row(session: Session, user: User) -> UserProfile:
 
 def account_data(session: Session, user: User) -> AccountData:
     row = session.scalar(select(UserProfile).where(UserProfile.user_id == user.id))
-    profile = None
-    if row and row.full_name:
-        profile = ProfileData(
-            role=row.account_role,
-            name=row.full_name,
-            store=row.store_name or "",
-            country=row.country,
-            address=row.address or "",
-            phone=row.phone or "",
-            payments=row.payment_methods,
-        )
-    return AccountData(profile=profile, preferences=Preferences(**(row.preferences if row else {})))
+    if row is None:
+        return AccountData(profile=None, preferences=Preferences())
+    profile = ProfileView(
+        role=row.account_role or "buyer",
+        name=row.full_name or "",
+        store=row.store_name or "",
+        country=row.country,
+        address=row.address or "",
+        phone=row.phone or "",
+        payments=row.payment_methods or [],
+    )
+    return AccountData(profile=profile, preferences=Preferences(**(row.preferences or {})))
 
 
 def save_profile(session: Session, user: User, data: ProfileData) -> None:

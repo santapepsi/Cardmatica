@@ -45,6 +45,7 @@ import { installProfile, renderProfile } from "./profile.js";
 import { fillCardOffers, installMarket } from "./market.js";
 import { installStock, renderStock } from "./stock.js";
 import { rarityBadge, rarityOptionsHtml, rarityParams } from "./rarities.js";
+import { onEachFrame } from "./format.js";
 import { installSearchSuggest } from "./search-suggest.js";
 import { readJson, writeJson } from "./storage.js";
 import { trendingHtml } from "./trending.js";
@@ -202,8 +203,8 @@ function markHiddenTabs() {
     nav.dataset.more = more.join(" ");
 }
 
-element("tabs").addEventListener("scroll", markHiddenTabs, { passive: true });
-window.addEventListener("resize", markHiddenTabs, { passive: true });
+element("tabs").addEventListener("scroll", onEachFrame(markHiddenTabs), { passive: true });
+window.addEventListener("resize", onEachFrame(markHiddenTabs), { passive: true });
 // With a mouse, the wheel moves the tabs sideways.
 element("tabs").addEventListener("wheel", (event) => {
     const nav = event.currentTarget;

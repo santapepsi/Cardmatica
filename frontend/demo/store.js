@@ -444,6 +444,8 @@ function conditionOptions() {
 
 const ADD_BUTTON = (listing) =>
     `<td class="num"><button class="btn s" data-add="${listing.id}">${t("Añadir")}</button></td>`;
+// Units in stock; on a phone, where the table becomes cards, with its label.
+const QUANTITY = (listing) => `<td class="num" data-label="${t("Disp.")}">${listing.quantity}</td>`;
 const NEW_CONDITION = () => `<span class="cond" style="background:#1b7f4d">${t("Nuevo")}</span>`;
 
 function sellerCell(listing) {
@@ -502,7 +504,7 @@ function renderSellers() {
                 </td>
                 <td class="hide">${t(seller.country)}</td>
                 <td title="${t("Valoración ficticia de la tienda de demostración")}">★ ${seller.rating}</td>
-                <td class="num">${inventory.listings.length}</td>
+                <td class="num hide">${inventory.listings.length}</td>
                 <td class="num hide">${inventory.units}</td>
                 <td class="num price">${formatPrice(inventory.value)}</td>
             </tr>`;
@@ -549,13 +551,12 @@ function openSeller(id) {
             </select>
         </div>
         <div class="wrap">
-            <table>
+            <table class="stack">
                 <thead>
                     <tr>
                         <th>${t("Carta")}</th>
                         <th>${t("Impresión")}</th>
-                        <th>${t("Estado")}</th>
-                        <th>${t("Idioma")}</th>
+                        <th>${t("Estado e idioma")}</th>
                         <th class="num">${t("Disp.")}</th>
                         <th class="num">${t("Precio")}</th>
                         <th></th>
@@ -597,13 +598,13 @@ function renderInventory() {
     sortListings(listings, byId("vs").value);
     byId("vt").innerHTML = listings.length
         ? listings.map(inventoryRow).join("")
-        : `<tr><td colspan="7" class="empty">${t("Este vendedor no tiene artículos con esos filtros.")}</td></tr>`;
+        : `<tr><td colspan="6" class="empty">${t("Este vendedor no tiene artículos con esos filtros.")}</td></tr>`;
 }
 
 function inventoryRow(listing) {
+    const language = `<span class="lang">${languageName(listing.language)}</span>`;
     const tail = markup`
-            <td>${languageName(listing.language)}</td>
-            <td class="num">${listing.quantity}</td>
+            ${QUANTITY(listing)}
             <td class="num price">${formatPrice(listing.price)}</td>
             ${ADD_BUTTON(listing)}
         </tr>`;
@@ -616,7 +617,7 @@ function inventoryRow(listing) {
                     <small>${productTag(product)}${t(product.category)}</small>
                 </td>
                 <td>${escapeText(productOrigin(product))}</td>
-                <td>${NEW_CONDITION()}</td>
+                <td>${NEW_CONDITION()} ${language}</td>
                 ${tail}`;
     }
     const card = CARDS[listing.card];
@@ -627,7 +628,7 @@ function inventoryRow(listing) {
                 <small>${marketTag(card)}${escapeText(cardKinds(card).join(" · "))}</small>
             </td>
             <td>${printingCell(card, listing)}</td>
-            <td>${conditionCell(listing)}</td>
+            <td>${conditionCell(listing)} ${language}</td>
             ${tail}`;
 }
 
@@ -953,14 +954,16 @@ function drawChart() {
 }
 
 // Tooltip del gráfico: muestra la venta más cercana al puntero en cada línea.
-document.addEventListener("pointermove", (event) => {
+function showChartTip(event) {
     const tip = byId("tip");
     if (!tip) return;
     const cursor = byId("cv");
     const overChart = event.target.closest && event.target.closest("#cs");
     if (!overChart || !drawnChart) {
-        tip.style.display = "none";
-        if (cursor) cursor.style.display = "none";
+        if (tip.style.display !== "none") {
+            tip.style.display = "none";
+            if (cursor) cursor.style.display = "none";
+        }
         return;
     }
     const { width, left, right } = DEMO_HISTORY.size;
@@ -991,7 +994,24 @@ document.addEventListener("pointermove", (event) => {
     const chartBox = byId("ch").getBoundingClientRect();
     tip.style.left = `${Math.min(Math.max(event.clientX - chartBox.left + 12, 0), chartBox.width - 170)}px`;
     tip.style.top = "34px";
-});
+}
+
+// El puntero se mueve más seguido de lo que se dibuja la pantalla: una vez por
+// cuadro, con el último movimiento.
+let chartPointer = null;
+document.addEventListener(
+    "pointermove",
+    (event) => {
+        if (!chartPointer)
+            requestAnimationFrame(() => {
+                const latest = chartPointer;
+                chartPointer = null;
+                showChartTip(latest);
+            });
+        chartPointer = event;
+    },
+    { passive: true }
+);
 
 // ---------------------------------------------------------------------------
 // Productos sellados y accesorios
@@ -1079,12 +1099,11 @@ function openProduct(id) {
         ${photo}
         <div class="facts" style="margin-bottom:10px">${facts}</div>
         <div class="wrap">
-            <table>
+            <table class="stack">
                 <thead>
                     <tr>
                         <th>${t("Vendedor")}</th>
-                        <th>${t("Idioma")}</th>
-                        <th>${t("Estado")}</th>
+                        <th>${t("Estado e idioma")}</th>
                         <th class="num">${t("Disp.")}</th>
                         <th class="num">${t("Precio")}</th>
                         <th></th>
@@ -1102,7 +1121,7 @@ function renderProductOffers() {
     const id = Number(byId("md").dataset.id);
     const listings = inStock((listing) => listing.product === id).sort((a, b) => a.price - b.price);
     if (!listings.length) {
-        byId("pt").innerHTML = `<tr><td colspan="6" class="empty">${t("Nadie lo tiene a la venta ahora.")}</td></tr>`;
+        byId("pt").innerHTML = `<tr><td colspan="5" class="empty">${t("Nadie lo tiene a la venta ahora.")}</td></tr>`;
         return;
     }
     byId("pt").innerHTML = listings
@@ -1110,9 +1129,8 @@ function renderProductOffers() {
             (listing) => markup`
                 <tr>
                     <td>${sellerCell(listing)}</td>
-                    <td>${languageName(listing.language)}</td>
-                    <td>${NEW_CONDITION()}</td>
-                    <td class="num">${listing.quantity}</td>
+                    <td>${NEW_CONDITION()} <span class="lang">${languageName(listing.language)}</span></td>
+                    ${QUANTITY(listing)}
                     <td class="num price">${formatPrice(listing.price)}</td>
                     ${ADD_BUTTON(listing)}
                 </tr>`

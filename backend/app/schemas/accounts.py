@@ -110,8 +110,21 @@ class Preferences(BaseModel):
     view: Literal["list", "grid"] | None = None
 
 
+class ProfileView(BaseModel):
+    """The profile as saved, for the page: an account made by staff or one that
+    only saved preferences may not have every part yet (no name, no country)."""
+
+    role: AccountRole = "buyer"
+    name: str = ""
+    store: str = ""
+    country: Country | None = None
+    address: str = ""
+    phone: str = ""
+    payments: list[str] = Field(default_factory=list)
+
+
 class AccountData(BaseModel):
-    profile: ProfileData | None
+    profile: ProfileView | None
     preferences: Preferences
 
 

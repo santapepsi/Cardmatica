@@ -7,6 +7,7 @@ import { escapeHtml, html } from "./html.js";
 import { t } from "./lang.js";
 import { request } from "./session-api.js";
 import { currentUser } from "./auth.js";
+import { accountNavHtml } from "./account-nav.js";
 import { currentProfile } from "./profile.js";
 import { finishName } from "./catalog-view.js";
 import { rarityBadge } from "./rarities.js";
@@ -214,6 +215,7 @@ export function renderStock(container) {
     const store = currentProfile()?.store || user.display_name;
     container.innerHTML = html`
         <h3>${t("Mi stock")} <small class="catalog-status">${h(store)}</small></h3>
+        ${accountNavHtml("Stock", true)}
         <div id="st-form-slot">${formHtml()}</div>
         <section class="gl pnl">
             <b>${t("En venta")}</b> <small id="st-count"></small>

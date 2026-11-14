@@ -10,6 +10,7 @@ import { escapeHtml, html } from "./html.js";
 import { t } from "./lang.js";
 import { request } from "./session-api.js";
 import { finishName } from "./catalog-view.js";
+import { toEuro } from "./format.js";
 import { rarityBadge } from "./rarities.js";
 
 const h = escapeHtml;
@@ -32,10 +33,18 @@ export function forgetOffers() {
     cache.clear();
 }
 
-// The storefront's currencies say how many of each make one euro.
-function inEuros(listing) {
-    const rate = window.CURRENCIES.find((item) => item.code === listing.currency)?.perEuro || 1;
-    return Number(listing.price) / rate;
+// Prices compare and add up in euros, the storefront's base (format.js).
+const inEuros = (listing) => toEuro(listing.price, listing.currency) ?? Number(listing.price);
+
+// A seller's stock in figures: items, units, value in euros, items with a photo.
+export function stockTotals(rows) {
+    const totals = { items: rows.length, units: 0, value: 0, photos: 0 };
+    for (const listing of rows) {
+        totals.units += listing.quantity;
+        totals.value += listing.quantity * inEuros(listing);
+        if (listing.photo_url) totals.photos += 1;
+    }
+    return totals;
 }
 
 export const priceHtml = (listing) => window.formatPrice(inEuros(listing));
@@ -125,7 +134,7 @@ function sellerRow(seller) {
             </td>
             <td class="hide">${seller.country ? t(seller.country) : "—"}</td>
             <td title="${t("Todavía sin valoraciones")}">${t("Nuevo")}</td>
-            <td class="num">${seller.listings}</td>
+            <td class="num hide">${seller.listings}</td>
             <td class="num hide">${seller.units}</td>
             <td class="num price">${window.formatPrice(seller.value)}</td>
         </tr>`;
@@ -159,9 +168,8 @@ function inventoryRow(listing) {
                 </div>
             </td>
             <td><b>${h(listing.code)}</b><small>${rarityBadge(listing, listing.game)} ${h(listing.set_name)}</small></td>
-            <td>${conditionHtml(listing.condition)}</td>
-            <td>${languageText(listing.language)}${finishText(listing.finish)}</td>
-            <td class="num">${listing.quantity}</td>
+            <td>${conditionHtml(listing.condition)} <span class="lang">${languageText(listing.language)}${finishText(listing.finish)}</span></td>
+            <td class="num" data-label="${t("Disp.")}">${listing.quantity}</td>
             <td class="num price">${priceHtml(listing)}</td>
         </tr>`;
 }
@@ -205,13 +213,12 @@ export async function openRealSeller(id) {
         </div>
         <p class="catalog-status">${t("Las ofertas de vendedores reales se podrán comprar cuando lleguen los pedidos.")}</p>
         <div class="wrap">
-            <table>
+            <table class="stack">
                 <thead>
                     <tr>
                         <th>${t("Carta")}</th>
                         <th>${t("Impresión")}</th>
-                        <th>${t("Estado")}</th>
-                        <th>${t("Idioma")}</th>
+                        <th>${t("Estado e idioma")}</th>
                         <th class="num">${t("Disp.")}</th>
                         <th class="num">${t("Precio")}</th>
                     </tr>
