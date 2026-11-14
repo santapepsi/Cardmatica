@@ -254,7 +254,10 @@ def test_banlist_price_history_wantlists_and_profile(live_server, browser_page, 
     page.locator("#pf-phone").fill("+598 99 123 456")
     page.locator('input[name="pf-payment"]').first.check()
     page.locator("#pf-form button[type=submit]").click()
-    expect(page.locator("#pfv .profile-card")).to_contain_text("Duelos del Sur")
+    # The account's card: name, role and store.
+    card = page.locator("#pfv .idc")
+    expect(card).to_contain_text("Duelos del Sur")
+    expect(card).to_contain_text("Vendedor")
     expect(page.locator("#account-button")).to_have_text("AP")
     page.locator("#account-button").click()
     expect(page.locator("#account-menu")).to_contain_text("Duelos del Sur")
@@ -266,8 +269,8 @@ def test_banlist_price_history_wantlists_and_profile(live_server, browser_page, 
     page.reload()
     page.locator("#account-button").click()
     page.locator('#account-menu [data-go="Perfil"]').first.click()
-    expect(page.locator("#pfv .profile-card")).to_contain_text("Ana Pérez")
-    expect(page.locator("#pfv")).to_contain_text("1 lista · 1 cartas")
+    expect(page.locator("#pfv .idc")).to_contain_text("Ana Pérez")
+    expect(page.locator("#pfv .idc-art")).to_have_text("AP")
     assert not errors
 
 
@@ -1268,4 +1271,35 @@ def test_a_seller_puts_a_card_on_sale_and_buyers_find_it(live_server, browser_pa
     expect(offers).to_contain_text("Tienda de prueba")
     expect(offers).to_contain_text("4,50")
     expect(offers.locator(".photo-thumb")).to_have_count(1)
+
+    # Their profile knows they sell, before they ever saved it, and sums their stock.
+    page.locator("[data-close=md]").first.click()
+    page.locator("#account-button").click()
+    page.locator('#account-menu [data-go="Perfil"]').first.click()
+    expect(page.locator("#pf-role")).to_have_value("seller")
+    expect(page.locator("#pf-stat-items")).to_have_text("2")
+    expect(page.locator("#pf-tile-photos")).to_have_text("1 / 2")
+    page.locator('#pfv .acct-nav [data-go="Stock"]').click()
+    expect(page.locator("#st-mine tbody tr")).to_have_count(2)
     assert not errors
+
+
+def test_phone_tables_fit_and_edges_line_up(live_server, browser_page):
+    """On a phone no panel scrolls sideways, and header, content and footer share
+    one left and right edge (at every width)."""
+    page = browser_page
+    sideways = """() => [...document.querySelectorAll('.wrap')]
+        .filter((box) => box.offsetParent && box.scrollWidth > box.clientWidth + 1)
+        .map((box) => box.className)"""
+    edges = """() => ['header', 'main', '.site-footer'].map((selector) => {
+        const box = document.querySelector(selector).getBoundingClientRect();
+        return [Math.round(box.left), Math.round(box.right)];
+    })"""
+    for width in (390, 820, 1280):
+        page.set_viewport_size({"width": width, "height": 844})
+        for tab in ("Todas", "Vendedores", "Productos"):
+            page.goto(f"{live_server}/yugioh?tab={tab}")
+            page.wait_for_timeout(300)
+            assert page.evaluate(sideways) == [], (width, tab)
+            header, main, footer = page.evaluate(edges)
+            assert header == main == footer, (width, tab)

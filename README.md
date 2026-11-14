@@ -388,6 +388,15 @@ su tienda con «Mi stock». Las listas referencian el UUID y la impresión del c
 índices del comercio de demostración. En el código y la API conservan el nombre técnico
 `wantlists`.
 
+**Mi perfil.** La cuenta se muestra como una carta propia, enmarcada con los colores del
+juego en pantalla. El arte son sus iniciales, la línea de tipo dice el rol y el país, y
+las estadísticas muestran artículos y unidades para un vendedor, o listas y cartas
+buscadas para un comprador. A la derecha están el valor del stock y cuántas copias
+tienen foto, los datos de la cuenta y la personalización. Una fila de enlaces une las
+páginas de la cuenta: perfil, Mi stock, listas de deseados y seguridad
+(`frontend/js/profile.js`, `account-nav.js`). La cuenta trae su perfil aunque esté
+incompleto, así una cuenta de vendedor creada por el equipo ya aparece como vendedora.
+
 **En tendencia y noticias del inicio.** «En tendencia» junta listas que salen solo
 de datos del catálogo (`backend/app/services/trending.py`): bajan de precio (ventas
 completadas), vuelven al juego (una banlist nueva las libera), más deseadas (en las

@@ -5,6 +5,9 @@
    transparencia: rgba(var(--line), .1). */
 :root {
     color-scheme: dark;
+    /* Header, content and footer share one width and one edge (the gutter). */
+    --page-width: 1120px;
+    --gutter: 10px;
     --tx: #e8f1fa;
     --mu: #9db0c6;
     --ac: #6fd3f2;
@@ -151,13 +154,28 @@ input {
         inset 0 1px 0 rgba(255, 255, 255, .13);
 }
 
+/* Inside the page the panels lie on the still backdrop (body::before), smooth
+   gradients where a blur shows nothing and costs on every scroll and every
+   tile: only the header, which slides over the content, blurs what is behind. */
+main .gl {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
 /* Encabezado, búsqueda y navegación */
+header,
+main,
+.site-footer {
+    width: min(var(--page-width), 100% - 2 * var(--gutter));
+    margin-inline: auto;
+    box-sizing: border-box;
+}
+
 header {
     position: sticky;
     top: calc(6px + env(safe-area-inset-top, 0px));
     z-index: 30;
-    margin: 10px auto 0;
-    max-width: 1120px;
+    margin-top: 10px;
     border-radius: 14px;
 }
 
@@ -366,9 +384,7 @@ select option {
 
 /* Contenido principal y tabla de cartas */
 main {
-    max-width: 1120px;
-    margin: 14px auto;
-    padding: 0 10px;
+    margin-block: 14px;
 }
 
 .tools {
@@ -505,10 +521,18 @@ small {
     border: 0;
     padding: 0;
     font-weight: 600;
+    /* A button centres its text: a name on two lines would sit off its column. */
+    text-align: start;
 }
 
 .lk:hover {
     text-decoration: underline;
+}
+
+/* The language beside the condition chip. */
+.lang {
+    margin-left: 4px;
+    white-space: nowrap;
 }
 
 /* Modales y carrito */
@@ -537,7 +561,6 @@ small {
     background:
         linear-gradient(180deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .02)),
         var(--box);
-    backdrop-filter: blur(18px);
     border: 1px solid var(--bd);
     box-shadow:
         0 20px 60px rgba(var(--shade), .55),
@@ -1229,7 +1252,8 @@ a.portal-game:focus-visible {
     cursor: pointer;
 }
 
-.pill[aria-pressed=true] {
+.pill[aria-pressed=true],
+.pill[aria-current=page] {
     border-color: rgba(var(--btn-line), .5);
     background: var(--btn);
 }
@@ -1277,19 +1301,30 @@ a.portal-game:focus-visible {
     color: var(--tx);
 }
 
-.profile-card {
-    margin-bottom: 12px;
-}
-
-.profile-card small {
-    display: block;
-    margin-top: 4px;
-    color: var(--mu);
-}
 
 /* Catálogo compacto: tipo y subtipos en una línea discreta bajo el nombre */
 .nm-text {
     min-width: 0;
+}
+
+/* The catalogue list keeps its column widths whatever the names (and is laid
+   out once, not measured row by row): long lines end in "…". */
+#cat table {
+    table-layout: fixed;
+}
+
+#cat th:nth-child(2) {
+    width: 110px;
+}
+
+#cat th:nth-child(3) {
+    width: 130px;
+}
+
+@media (max-width: 640px) {
+    #cat th:nth-child(3) {
+        width: 96px;
+    }
 }
 
 .nm-text .meta {
@@ -1546,10 +1581,28 @@ button:disabled {
     filter: brightness(1.12);
 }
 
+/* A tile's name takes two lines whatever its length, so the type lines, the
+   banlist marks and the prices of a row line up. */
 .card-tile-body {
-    display: grid;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
     gap: 2px;
     min-width: 0;
+}
+
+.card-tile-body > b {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    line-height: 1.3;
+    min-height: 2.6em;
+}
+
+.card-tile-price {
+    padding-top: 4px;
 }
 
 .card-tile-body .meta {
@@ -2022,10 +2075,6 @@ button:disabled {
     width: 100%;
 }
 
-.cd-table th {
-    text-align: center;
-}
-
 .cd-product {
     display: flex;
     align-items: center;
@@ -2270,10 +2319,6 @@ button.acc-avatar:hover,
     margin: 8px 10px 4px;
 }
 
-#pf-prefs {
-    margin-top: 12px;
-}
-
 @media (max-width: 640px) {
     .acc-menu {
         position: fixed;
@@ -2350,8 +2395,12 @@ button.acc-avatar:hover,
     color: var(--mu);
 }
 
-#secv .pnl + .pnl {
-    margin-top: 12px;
+/* Seguridad: its panels side by side on a wide screen, one under another on a phone. */
+.acct-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: 12px;
+    align-items: start;
 }
 
 .auth-session-list {
@@ -2382,19 +2431,14 @@ button.acc-avatar:hover,
     width: 100%;
 }
 
-#secv {
-    max-width: 640px;
-}
-
 #secv .fm-stack .btn {
     justify-self: start;
 }
 
 /* Pie de página y páginas de texto (legales, 404) */
 .site-footer {
-    max-width: 1100px;
-    margin: 32px auto 24px;
-    padding: 16px;
+    margin-block: 32px 24px;
+    padding: 16px 0;
     border-top: 1px solid var(--bd);
     display: grid;
     gap: 6px;
@@ -2416,10 +2460,10 @@ button.acc-avatar:hover,
     font-size: 12px;
 }
 
+/* Legal pages: a narrower column to read, centred inside the page width. */
 .page {
     max-width: 820px;
     margin: 18px auto;
-    padding: 0 16px;
 }
 
 .legal h1 {
@@ -3238,8 +3282,12 @@ button.acc-avatar:hover,
 }
 
 @media (max-width: 640px) {
+    :root {
+        --gutter: 6px;
+    }
+
     header {
-        margin: 6px 6px 0;
+        margin-top: 6px;
         transition: transform .25s ease;
     }
 
@@ -3249,7 +3297,6 @@ button.acc-avatar:hover,
 
     main {
         margin-top: 10px;
-        padding: 0 6px;
     }
 
     /* Filtros en dos columnas, detrás del botón «Filtros». */
@@ -3313,12 +3360,6 @@ button.acc-avatar:hover,
 
     .cd-image .catalog-image.large {
         max-width: 200px;
-    }
-
-    /* Sobre un fondo liso el desenfoque no se nota y cuesta en cada desplazamiento. */
-    main .gl {
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
     }
 }
 
@@ -3822,4 +3863,272 @@ button.acc-avatar:hover,
     white-space: normal;
     box-shadow: 0 8px 24px rgba(var(--shade), .45);
     pointer-events: none;
+}
+
+/* Tablas en el teléfono: menos relleno, y las que tienen muchas columnas
+   (inventarios y ofertas, clase "stack") pasan a fichas: lo que describe la
+   copia a la izquierda, unidades, precio y botón a la derecha. */
+@media (max-width: 640px) {
+    th,
+    td {
+        padding-inline: 6px;
+    }
+
+    th:first-child,
+    td:first-child {
+        padding-left: 10px;
+    }
+
+    th:last-child,
+    td:last-child {
+        padding-right: 10px;
+    }
+
+    table.stack thead {
+        display: none;
+    }
+
+    table.stack tr {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-auto-flow: row dense;
+        gap: 4px 12px;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid rgba(var(--line), .08);
+    }
+
+    table.stack td {
+        grid-column: 1;
+        padding: 0;
+        border: 0;
+    }
+
+    table.stack td.num {
+        grid-column: 2;
+        text-align: right;
+    }
+
+    table.stack td[colspan] {
+        grid-column: 1 / -1;
+    }
+
+    /* Flag and name stay on one line; the whole row is what one taps. */
+    td > .lk {
+        display: inline;
+        padding: 0;
+    }
+
+    table.stack td[data-label]::before {
+        content: attr(data-label) " ";
+        color: var(--mu);
+        font-size: 12px;
+    }
+}
+
+/* ---- La cuenta (frontend/js/profile.js, account-nav.js) ---------------------- */
+
+/* Las páginas de la cuenta, en una fila que se desliza en el teléfono. */
+.acct-nav {
+    display: flex;
+    gap: 6px;
+    margin: 0 0 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.acct-nav::-webkit-scrollbar {
+    display: none;
+}
+
+.acct-nav .pill {
+    flex: none;
+    color: inherit;
+    font: inherit;
+    font-size: 13px;
+}
+
+/* Mi perfil: la carta de la cuenta a la izquierda, todo lo demás a la derecha. */
+.acct {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.acct-main > * + * {
+    margin-top: 12px;
+}
+
+.acct-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* La cuenta como carta coleccionable: nombre, arte, línea de tipo, texto y
+   estadísticas, enmarcada con los colores del juego en pantalla. */
+.idc {
+    aspect-ratio: 63 / 88;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 14px;
+    color: #fff;
+    background: linear-gradient(150deg, var(--idc-from), var(--idc-to));
+    box-shadow: 0 12px 28px rgba(var(--shade), .35), inset 0 0 0 1px rgba(255, 255, 255, .22);
+}
+
+.idc-name,
+.idc-type {
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, .3);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.idc-name {
+    font-size: 15px;
+}
+
+.idc-type {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.idc-type .fl {
+    flex: none;
+}
+
+.idc-art {
+    display: grid;
+    place-items: center;
+    border-radius: 6px;
+    border: 2px solid rgba(255, 255, 255, .35);
+    background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, .35), transparent 60%), rgba(0, 0, 0, .22);
+    font-size: 56px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+}
+
+.idc-text {
+    padding: 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, .9);
+    color: #1b2533;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.idc-text p {
+    margin: 0;
+}
+
+.idc-stats {
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+    font-size: 13px;
+}
+
+.idc-stats small {
+    display: inline;
+    margin-right: 4px;
+    color: rgba(255, 255, 255, .8);
+    font-size: 10px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+/* Lo que tiene la cuenta, en fichas que llevan a cada lugar. */
+.acct-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.acct-tile {
+    display: grid;
+    gap: 2px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+}
+
+.acct-tile b {
+    font-size: 20px;
+}
+
+.acct-tile:hover {
+    filter: brightness(1.12);
+}
+
+.acct-save {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    margin-top: 14px;
+}
+
+.acct-save small {
+    flex: 1 1 260px;
+}
+
+#pf-form > b,
+#pf-prefs > b {
+    display: block;
+    margin-bottom: 10px;
+}
+
+/* En pantallas angostas, la carta se acuesta: arte a la izquierda, datos a la derecha. */
+@media (max-width: 760px) {
+    .acct {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .idc {
+        aspect-ratio: auto;
+        grid-template-columns: 92px minmax(0, 1fr);
+        grid-template-rows: auto auto auto;
+        grid-template-areas:
+            "art name"
+            "art type"
+            "art stats"
+            "text text";
+    }
+
+    .idc-name { grid-area: name; }
+    .idc-type { grid-area: type; }
+    .idc-stats { grid-area: stats; justify-content: flex-start; align-self: center; }
+    .idc-text { grid-area: text; }
+
+    .idc-art {
+        grid-area: art;
+        min-height: 92px;
+        font-size: 32px;
+    }
+
+    .acct-actions {
+        margin-top: 10px;
+    }
+
+    .acct-tiles {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    }
+
+    .acct-tile b {
+        font-size: 17px;
+    }
 }

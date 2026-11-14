@@ -123,18 +123,27 @@ export function homeBanlistHtml(lists, market) {
     return `<h3>Banlist</h3><div class="two">${homePanel(lists, market, market)}${homePanel(lists, other, market)}</div>`;
 }
 
+const UNITS = ["días", "horas", "min", "seg"];
+
+// Each second only the numbers that changed are written; the boxes are drawn once.
 function tick() {
+    if (document.hidden) return;
     for (const element of document.querySelectorAll("[data-countdown]")) {
         const seconds = Math.max(0, Math.floor((Date.parse(element.dataset.countdown) - Date.now()) / 1000));
-        const parts = [
-            [Math.floor(seconds / 86400), "días"],
-            [Math.floor((seconds % 86400) / 3600), "horas"],
-            [Math.floor((seconds % 3600) / 60), "min"],
-            [seconds % 60, "seg"]
-        ];
-        element.innerHTML = parts
-            .map(([value, label]) => `<div><b>${value}</b><small>${t(label)}</small></div>`)
-            .join("");
+        const values = [
+            Math.floor(seconds / 86400),
+            Math.floor((seconds % 86400) / 3600),
+            Math.floor((seconds % 3600) / 60),
+            seconds % 60
+        ].map(String);
+        let numbers = element.querySelectorAll("b");
+        if (numbers.length !== UNITS.length) {
+            element.innerHTML = UNITS.map((label) => `<div><b></b><small>${t(label)}</small></div>`).join("");
+            numbers = element.querySelectorAll("b");
+        }
+        values.forEach((value, index) => {
+            if (numbers[index].textContent !== value) numbers[index].textContent = value;
+        });
     }
 }
 
